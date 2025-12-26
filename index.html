@@ -1326,7 +1326,6 @@
           migrateIntoKey,
           migrateOnceKey,
           ensureLots,
-          ensureOnceKey,
         } = opts;
 
         let initialized = false;
@@ -1423,6 +1422,9 @@
 
             // table
             tb.innerHTML = "";
+            if (!lots.length) {
+              tb.innerHTML = `<tr><td colspan="11" class="muted">No holdings yet. Add one below.</td></tr>`;
+            }
             for (const lot of lots) {
               const t = normalizeTicker(lot.ticker);
               const current = portfolio.currentCloseByTicker[t];
@@ -1644,12 +1646,9 @@
                 const into = readArr(migrateIntoKey) || [];
 
                 const fp = (l) =>
-                  [
-                    normalizeTicker(l.ticker),
-                    l.date || "",
-                    String(l.shares ?? ""),
-                    l.purchasePrice == null ? "" : String(l.purchasePrice),
-                  ].join("|");
+                  [normalizeTicker(l.ticker), l.date || "", String(l.shares ?? "")].join(
+                    "|"
+                  );
 
                 const seen = new Set(into.map(fp));
                 for (const lot of from) {
@@ -1707,6 +1706,30 @@
             }
           } catch {
             // ignore
+          }
+
+          // Ensure lots exist (runs every time; deduped by ticker+date+shares)
+          if (Array.isArray(ensureLots) && ensureLots.length) {
+            try {
+              const lots = loadLots();
+              const fp = (l) =>
+                [normalizeTicker(l.ticker), l.date || "", String(l.shares ?? "")].join(
+                  "|"
+                );
+              const seen = new Set(lots.map(fp));
+              let changed = false;
+              for (const lot of ensureLots) {
+                const key = fp(lot);
+                if (!seen.has(key)) {
+                  lots.push(lot);
+                  seen.add(key);
+                  changed = true;
+                }
+              }
+              if (changed) saveLots(lots);
+            } catch {
+              // ignore
+            }
           }
 
           const runTickerSearch = async () => {
