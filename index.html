@@ -48,6 +48,64 @@
         padding: 48px 20px;
       }
 
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(10px);
+        background: color-mix(in oklab, var(--bg) 80%, transparent);
+        border-bottom: 1px solid color-mix(in oklab, var(--muted) 18%, transparent);
+      }
+
+      .topbar-inner {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .brand {
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--text);
+        white-space: nowrap;
+      }
+
+      nav ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      nav a {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid color-mix(in oklab, var(--muted) 18%, transparent);
+        background: color-mix(in oklab, var(--card) 75%, transparent);
+        color: var(--text);
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+
+      nav a:hover {
+        border-color: color-mix(in oklab, var(--accent) 55%, transparent);
+        text-decoration: none;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 76px;
+      }
+
       header {
         display: grid;
         gap: 10px;
@@ -114,25 +172,37 @@
     </style>
   </head>
   <body>
+    <div class="topbar" role="banner">
+      <div class="topbar-inner">
+        <div class="brand">Niklas random stuff</div>
+        <nav aria-label="Top menu">
+          <ul>
+            <li><a href="#investments">Investments</a></li>
+            <li><a href="#schedule">Schedule</a></li>
+            <li><a href="#todos">Todos</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
     <main>
       <header>
         <div class="pill">Niklas random stuff</div>
         <h1>Niklas random stuff</h1>
-        <p>A simple page for links, notes, and experiments.</p>
+        <p>A simple homepage for investments, schedule, and todos.</p>
       </header>
 
-      <section class="grid" aria-label="Random stuff sections">
+      <section class="grid" aria-label="Homepage sections">
         <article class="card">
-          <h2>Links</h2>
-          <p>Add your favorite links here.</p>
+          <h2 id="investments">Investments</h2>
+          <p>Track holdings, ideas, and links to resources.</p>
         </article>
         <article class="card">
-          <h2>Notes</h2>
-          <p>Quick thoughts, drafts, or reminders.</p>
+          <h2 id="schedule">Schedule</h2>
+          <p>Upcoming plans, reminders, and routines.</p>
         </article>
         <article class="card">
-          <h2>Experiments</h2>
-          <p>Small demos and random ideas.</p>
+          <h2 id="todos">Todos</h2>
+          <p>Things to do next (work, personal, projects).</p>
         </article>
       </section>
 
