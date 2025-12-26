@@ -93,9 +93,124 @@
         text-decoration: none;
       }
 
+      nav a[aria-current="page"] {
+        border-color: color-mix(in oklab, var(--accent) 70%, transparent);
+        box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 18%, transparent);
+      }
+
       html {
         scroll-behavior: smooth;
         scroll-padding-top: 72px;
+      }
+
+      .panel {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px 20px 48px;
+      }
+
+      section[hidden] {
+        display: none !important;
+      }
+
+      .card {
+        border: 1px solid color-mix(in oklab, var(--muted) 20%, transparent);
+        background: color-mix(in oklab, var(--card) 92%, transparent);
+        border-radius: 14px;
+        padding: 16px;
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: 1.15rem;
+        letter-spacing: -0.01em;
+      }
+
+      .muted {
+        color: var(--muted);
+        margin: 0;
+      }
+
+      .todo-form {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .todo-form input {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid color-mix(in oklab, var(--muted) 25%, transparent);
+        background: color-mix(in oklab, var(--card) 70%, transparent);
+        color: var(--text);
+        outline: none;
+      }
+
+      .todo-form input:focus {
+        border-color: color-mix(in oklab, var(--accent) 65%, transparent);
+        box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 18%, transparent);
+      }
+
+      .todo-form button {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid color-mix(in oklab, var(--accent) 55%, transparent);
+        background: color-mix(in oklab, var(--accent) 18%, transparent);
+        color: var(--text);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .todo-form button:hover {
+        background: color-mix(in oklab, var(--accent) 24%, transparent);
+      }
+
+      .todo-list {
+        list-style: none;
+        margin: 12px 0 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+      }
+
+      .todo-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid color-mix(in oklab, var(--muted) 20%, transparent);
+        background: color-mix(in oklab, var(--card) 70%, transparent);
+      }
+
+      .todo-item label {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+      }
+
+      .todo-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--accent);
+      }
+
+      .todo-item button {
+        border: 1px solid color-mix(in oklab, var(--muted) 22%, transparent);
+        background: transparent;
+        color: var(--muted);
+        border-radius: 10px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+
+      .todo-item button:hover {
+        color: var(--text);
+        border-color: color-mix(in oklab, var(--muted) 35%, transparent);
       }
 
       a {
@@ -120,5 +235,155 @@
         </nav>
       </div>
     </div>
+
+    <main class="panel">
+      <section id="investments" class="card" hidden>
+        <h2>Investments</h2>
+        <p class="muted">Add content here when you want.</p>
+      </section>
+
+      <section id="schedule" class="card" hidden>
+        <h2>Schedule</h2>
+        <p class="muted">Add content here when you want.</p>
+      </section>
+
+      <section id="todos" class="card" hidden>
+        <h2>Todos</h2>
+        <p class="muted">Your main page. Add and check off tasks.</p>
+
+        <form class="todo-form" id="todo-form">
+          <input
+            id="todo-input"
+            name="todo"
+            type="text"
+            autocomplete="off"
+            placeholder="Add a new todo…"
+            aria-label="Add a new todo"
+            required
+          />
+          <button type="submit">Add</button>
+        </form>
+
+        <ul class="todo-list" id="todo-list" aria-label="Todo list"></ul>
+      </section>
+    </main>
+
+    <script>
+      const DEFAULT_TAB = "#todos";
+      const TAB_IDS = ["#investments", "#schedule", "#todos"];
+      const STORAGE_KEY = "niklas-hemsida-todos-v1";
+
+      const byId = (id) => document.getElementById(id);
+      const $sections = TAB_IDS.map((hash) =>
+        document.querySelector(hash)
+      ).filter(Boolean);
+
+      function setActiveTab(hash) {
+        const active = TAB_IDS.includes(hash) ? hash : DEFAULT_TAB;
+
+        for (const section of $sections) {
+          section.hidden = "#" + section.id !== active;
+        }
+
+        for (const a of document.querySelectorAll('nav a[href^="#"]')) {
+          a.setAttribute(
+            "aria-current",
+            a.getAttribute("href") === active ? "page" : "false"
+          );
+        }
+      }
+
+      function loadTodos() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          const parsed = raw ? JSON.parse(raw) : null;
+          if (Array.isArray(parsed)) return parsed;
+        } catch {
+          // ignore
+        }
+
+        return [
+          {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+            text: "My first todo",
+            done: false,
+          },
+        ];
+      }
+
+      function saveTodos(todos) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+      }
+
+      function renderTodos(todos) {
+        const list = byId("todo-list");
+        list.innerHTML = "";
+
+        for (const t of todos) {
+          const li = document.createElement("li");
+          li.className = "todo-item";
+
+          const label = document.createElement("label");
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = Boolean(t.done);
+          checkbox.addEventListener("change", () => {
+            t.done = checkbox.checked;
+            saveTodos(todos);
+          });
+
+          const text = document.createElement("span");
+          text.textContent = t.text;
+
+          label.appendChild(checkbox);
+          label.appendChild(text);
+
+          const del = document.createElement("button");
+          del.type = "button";
+          del.textContent = "Delete";
+          del.addEventListener("click", () => {
+            const idx = todos.findIndex((x) => x.id === t.id);
+            if (idx >= 0) todos.splice(idx, 1);
+            saveTodos(todos);
+            renderTodos(todos);
+          });
+
+          li.appendChild(label);
+          li.appendChild(del);
+          list.appendChild(li);
+        }
+      }
+
+      // Default to Todos on first load
+      if (!location.hash) {
+        history.replaceState(null, "", DEFAULT_TAB);
+      }
+
+      let todos = loadTodos();
+      saveTodos(todos);
+      renderTodos(todos);
+
+      setActiveTab(location.hash);
+      window.addEventListener("hashchange", () => setActiveTab(location.hash));
+
+      byId("todo-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const input = byId("todo-input");
+        const value = input.value.trim();
+        if (!value) return;
+
+        todos.unshift({
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+          text: value,
+          done: false,
+        });
+
+        saveTodos(todos);
+        renderTodos(todos);
+        input.value = "";
+        input.focus();
+      });
+    </script>
   </body>
 </html>
