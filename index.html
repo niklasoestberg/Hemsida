@@ -131,6 +131,33 @@
         margin: 0;
       }
 
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+        margin-bottom: 12px;
+      }
+
+      .stat {
+        border: 1px solid color-mix(in oklab, var(--muted) 20%, transparent);
+        background: color-mix(in oklab, var(--card) 70%, transparent);
+        border-radius: 14px;
+        padding: 12px;
+      }
+
+      .stat .label {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+      }
+
+      .stat .value {
+        font-size: 1.15rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+
       .table-wrap {
         margin-top: 12px;
         overflow-x: auto;
@@ -159,6 +186,20 @@
         text-align: right;
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
+      }
+
+      .chart-wrap {
+        margin-top: 12px;
+        border: 1px solid color-mix(in oklab, var(--muted) 20%, transparent);
+        background: color-mix(in oklab, var(--card) 70%, transparent);
+        border-radius: 14px;
+        padding: 12px;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 280px;
       }
 
       .todo-form {
@@ -270,9 +311,28 @@
       <section id="investments" class="card" hidden>
         <h2>Investments</h2>
         <p class="muted">
-          Holdings and purchase history. Prices are daily closes from Stooq (EUR).
-          Current shown as close on 2025-12-23.
+          Total invested, current value, and purchase history (EUR).
+          As of <span id="inv-asof">—</span>.
         </p>
+
+        <div class="stats" aria-label="Investment summary">
+          <div class="stat">
+            <div class="label">Total invested</div>
+            <div class="value" id="inv-total-invested">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">Current total value</div>
+            <div class="value" id="inv-current-value">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">IRR (annualized)</div>
+            <div class="value" id="inv-irr">—</div>
+          </div>
+        </div>
+
+        <div class="chart-wrap" role="region" aria-label="Portfolio value chart">
+          <canvas id="portfolio-chart"></canvas>
+        </div>
 
         <div class="table-wrap" role="region" aria-label="Investments table">
           <table>
@@ -283,22 +343,13 @@
                 <th class="num">Shares</th>
                 <th class="num">Purchase price (EUR)</th>
                 <th class="num">Current price (EUR)</th>
+                <th class="num">Invested (EUR)</th>
+                <th class="num">Current value (EUR)</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>Delivery Hero</td>
-                <td>2023-04-11</td>
-                <td class="num">100</td>
-                <td class="num">32.31</td>
-                <td class="num">21.97</td>
-              </tr>
-              <tr>
-                <td>Delivery Hero</td>
-                <td>2024-06-24</td>
-                <td class="num">100</td>
-                <td class="num">25.92</td>
-                <td class="num">21.97</td>
+                <td colspan="7" class="muted">Loading…</td>
               </tr>
             </tbody>
           </table>
@@ -336,10 +387,27 @@
       const TAB_IDS = ["#investments", "#schedule", "#todos"];
       const STORAGE_KEY = "niklas-hemsida-todos-v1";
 
+      // Portfolio data snapshot (prices: Stooq daily closes)
+      const PORTFOLIO_DATA = {"asOf":"2025-12-23","currency":"EUR","ticker":"dher.de","lots":[{"asset":"Delivery Hero","date":"2023-04-11","shares":100,"purchaseDateUsed":"2023-04-11","purchaseClose":32.305},{"asset":"Delivery Hero","date":"2024-06-24","shares":100,"purchaseDateUsed":"2024-06-24","purchaseClose":25.92}],"latestClose":21.97,"summary":{"totalInvested":5822.5,"currentValue":4394.0,"irr":-0.12304948722578726},"series":[{"d":"2023-04-11","v":3230.5},{"d":"2023-04-20","v":3408.0},{"d":"2023-05-02","v":3724.0},{"d":"2023-05-11","v":3910.0},{"d":"2023-05-22","v":3711.0},{"d":"2023-05-31","v":3500.0},{"d":"2023-06-09","v":3575.0},{"d":"2023-06-20","v":3445.0},{"d":"2023-06-29","v":3917.0},{"d":"2023-07-10","v":3938.0},{"d":"2023-07-19","v":4267.0},{"d":"2023-07-28","v":4092.0},{"d":"2023-08-08","v":3726.0},{"d":"2023-08-17","v":3671.0},{"d":"2023-08-28","v":3494.0},{"d":"2023-09-06","v":3246.0},{"d":"2023-09-15","v":3090.0},{"d":"2023-09-26","v":2839.0},{"d":"2023-10-05","v":2650.0},{"d":"2023-10-16","v":2745.0},{"d":"2023-10-25","v":2362.0},{"d":"2023-11-03","v":2750.0},{"d":"2023-11-14","v":2970.0},{"d":"2023-11-23","v":3130.0},{"d":"2023-12-04","v":2988.0},{"d":"2023-12-13","v":2841.0},{"d":"2023-12-22","v":2393.0},{"d":"2024-01-05","v":2418.0},{"d":"2024-01-16","v":2255.0},{"d":"2024-01-25","v":2336.0},{"d":"2024-02-05","v":1740.0},{"d":"2024-02-14","v":2230.0},{"d":"2024-02-23","v":2224.0},{"d":"2024-03-05","v":2196.0},{"d":"2024-03-14","v":2630.0},{"d":"2024-03-25","v":2709.0},{"d":"2024-04-05","v":3200.0},{"d":"2024-04-16","v":2892.0},{"d":"2024-04-25","v":3079.0},{"d":"2024-05-07","v":2574.0},{"d":"2024-05-16","v":3222.0},{"d":"2024-05-27","v":2953.0},{"d":"2024-06-05","v":2850.0},{"d":"2024-06-14","v":2784.0},{"d":"2024-06-24","v":5184.0},{"d":"2024-06-25","v":5002.0},{"d":"2024-07-04","v":4268.0},{"d":"2024-07-15","v":4104.0},{"d":"2024-07-24","v":3662.0},{"d":"2024-08-02","v":3876.0},{"d":"2024-08-13","v":4216.0},{"d":"2024-08-22","v":4594.0},{"d":"2024-09-02","v":5800.0},{"d":"2024-09-11","v":5380.0},{"d":"2024-09-20","v":6006.0},{"d":"2024-10-01","v":7458.0},{"d":"2024-10-10","v":7948.0},{"d":"2024-10-21","v":7698.0},{"d":"2024-10-30","v":8000.0},{"d":"2024-11-08","v":7430.0},{"d":"2024-11-19","v":7242.0},{"d":"2024-11-28","v":7598.0},{"d":"2024-12-09","v":7116.0},{"d":"2024-12-18","v":5758.0},{"d":"2025-01-03","v":5560.0},{"d":"2025-01-14","v":5862.0},{"d":"2025-01-23","v":5082.0},{"d":"2025-02-03","v":4970.0},{"d":"2025-02-12","v":5250.0},{"d":"2025-02-21","v":5498.0},{"d":"2025-03-04","v":5434.0},{"d":"2025-03-13","v":4856.0},{"d":"2025-03-24","v":4792.0},{"d":"2025-04-02","v":4556.0},{"d":"2025-04-11","v":4464.0},{"d":"2025-04-24","v":5030.0},{"d":"2025-05-06","v":5220.0},{"d":"2025-05-15","v":5338.0},{"d":"2025-05-26","v":4968.0},{"d":"2025-06-04","v":4770.0},{"d":"2025-06-13","v":4420.0},{"d":"2025-06-24","v":4510.0},{"d":"2025-07-03","v":4734.0},{"d":"2025-07-14","v":4754.0},{"d":"2025-07-23","v":5342.0},{"d":"2025-08-01","v":5130.0},{"d":"2025-08-12","v":4770.0},{"d":"2025-08-21","v":4802.0},{"d":"2025-09-01","v":4650.0},{"d":"2025-09-10","v":5176.0},{"d":"2025-09-19","v":5560.0},{"d":"2025-09-30","v":4882.0},{"d":"2025-10-09","v":4920.0},{"d":"2025-10-20","v":4642.0},{"d":"2025-10-29","v":4614.0},{"d":"2025-11-07","v":3586.0},{"d":"2025-11-18","v":3210.0},{"d":"2025-11-27","v":3508.0},{"d":"2025-12-08","v":3839.0},{"d":"2025-12-17","v":4332.0},{"d":"2025-12-23","v":4394.0}]};
+
       const byId = (id) => document.getElementById(id);
       const $sections = TAB_IDS.map((hash) =>
         document.querySelector(hash)
       ).filter(Boolean);
+
+      const eur = new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency: "EUR",
+        maximumFractionDigits: 2,
+      });
+
+      function fmtPct(x) {
+        if (typeof x !== "number" || !Number.isFinite(x)) return "—";
+        return new Intl.NumberFormat(undefined, {
+          style: "percent",
+          maximumFractionDigits: 1,
+        }).format(x);
+      }
 
       function setActiveTab(hash) {
         const active = TAB_IDS.includes(hash) ? hash : DEFAULT_TAB;
@@ -354,6 +422,155 @@
             a.getAttribute("href") === active ? "page" : "false"
           );
         }
+
+        if (active === "#investments") {
+          initInvestments();
+        }
+
+        return active;
+      }
+
+      let investmentsInitialized = false;
+      let portfolioChartRaf = 0;
+
+      function resizeCanvasToContainer(canvas) {
+        const ratio = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        const w = Math.max(1, Math.floor(rect.width * ratio));
+        const h = Math.max(1, Math.floor(rect.height * ratio));
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+        return ratio;
+      }
+
+      function drawPortfolioChart(canvas, series) {
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        resizeCanvasToContainer(canvas);
+
+        const W = canvas.width;
+        const H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        if (!Array.isArray(series) || series.length < 2) {
+          return;
+        }
+
+        const padding = 28;
+        const left = padding;
+        const right = W - padding;
+        const top = padding;
+        const bottom = H - padding;
+
+        const values = series.map((p) => p.v);
+        const minV = Math.min(...values);
+        const maxV = Math.max(...values);
+        const span = Math.max(1e-6, maxV - minV);
+
+        const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#7aa2ff";
+        const muted = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim() || "#aab6d6";
+
+        // axes
+        ctx.save();
+        ctx.strokeStyle = muted;
+        ctx.globalAlpha = 0.45;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(left, top);
+        ctx.lineTo(left, bottom);
+        ctx.lineTo(right, bottom);
+        ctx.stroke();
+
+        // simple horizontal grid lines
+        ctx.globalAlpha = 0.25;
+        for (let i = 1; i <= 3; i++) {
+          const y = top + ((bottom - top) * i) / 4;
+          ctx.beginPath();
+          ctx.moveTo(left, y);
+          ctx.lineTo(right, y);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        // line
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < series.length; i++) {
+          const x = left + ((right - left) * i) / (series.length - 1);
+          const y =
+            bottom - ((bottom - top) * (series[i].v - minV)) / span;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // labels (min/max)
+        ctx.fillStyle = muted;
+        ctx.font = `${Math.max(10, Math.floor(W / 90))}px ui-sans-serif, system-ui`;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(eur.format(maxV), left, 6);
+        ctx.textBaseline = "bottom";
+        ctx.fillText(eur.format(minV), left, H - 6);
+      }
+
+      function initInvestments() {
+        if (investmentsInitialized) return;
+        investmentsInitialized = true;
+
+        byId("inv-asof").textContent = PORTFOLIO_DATA.asOf;
+        byId("inv-total-invested").textContent = eur.format(
+          PORTFOLIO_DATA.summary.totalInvested
+        );
+        byId("inv-current-value").textContent = eur.format(
+          PORTFOLIO_DATA.summary.currentValue
+        );
+        byId("inv-irr").textContent = fmtPct(PORTFOLIO_DATA.summary.irr);
+
+        // table rows
+        const tbody = document.querySelector("#investments tbody");
+        tbody.innerHTML = "";
+        for (const lot of PORTFOLIO_DATA.lots) {
+          const tr = document.createElement("tr");
+          const current = PORTFOLIO_DATA.latestClose;
+          const invested = lot.shares * lot.purchaseClose;
+          const currentValue = lot.shares * current;
+
+          const cells = [
+            { text: lot.asset },
+            { text: lot.date },
+            { text: String(lot.shares), cls: "num" },
+            { text: lot.purchaseClose.toFixed(2), cls: "num" },
+            { text: current.toFixed(2), cls: "num" },
+            { text: eur.format(invested), cls: "num" },
+            { text: eur.format(currentValue), cls: "num" },
+          ];
+
+          for (const c of cells) {
+            const td = document.createElement("td");
+            td.textContent = c.text;
+            if (c.cls) td.className = c.cls;
+            tr.appendChild(td);
+          }
+
+          tbody.appendChild(tr);
+        }
+
+        // chart
+        const canvas = byId("portfolio-chart");
+        const series = PORTFOLIO_DATA.series;
+
+        const redraw = () => drawPortfolioChart(canvas, series);
+        redraw();
+
+        window.addEventListener("resize", () => {
+          cancelAnimationFrame(portfolioChartRaf);
+          portfolioChartRaf = requestAnimationFrame(redraw);
+        });
       }
 
       function loadTodos() {
