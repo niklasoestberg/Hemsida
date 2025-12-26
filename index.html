@@ -612,8 +612,9 @@
           return;
         }
 
+        // Extra left padding for y-axis labels
         const padding = 28;
-        const left = padding;
+        const left = padding + 26;
         const right = W - padding;
         const top = padding;
         const bottom = H - padding;
@@ -678,18 +679,25 @@
         }
         ctx.stroke();
 
-        // labels (min/max %)
+        // labels (y-axis %)
         const pct = new Intl.NumberFormat(undefined, {
           style: "percent",
-          maximumFractionDigits: 1,
+          maximumFractionDigits: 0,
         });
         ctx.fillStyle = muted;
         ctx.font = `${Math.max(10, Math.floor(W / 90))}px ui-sans-serif, system-ui`;
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        ctx.fillText(pct.format(maxV), left, 6);
-        ctx.textBaseline = "bottom";
-        ctx.fillText(pct.format(minV), left, H - 6);
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+
+        const yFor = (v) => bottom - ((bottom - top) * (v - minV)) / span;
+        const labelX = left - 8;
+
+        // Show max/min, plus 0% if it fits in range
+        ctx.fillText(pct.format(maxV), labelX, yFor(maxV));
+        if (minV <= 0 && maxV >= 0) {
+          ctx.fillText("0%", labelX, yFor(0));
+        }
+        ctx.fillText(pct.format(minV), labelX, yFor(minV));
 
         // x-axis date labels (start / mid / end)
         const startDate = series[0].d;
