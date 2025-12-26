@@ -208,6 +208,64 @@
         margin-top: 12px;
       }
 
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+        min-width: 160px;
+        flex: 1;
+      }
+
+      .field label {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .input {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid color-mix(in oklab, var(--muted) 25%, transparent);
+        background: color-mix(in oklab, var(--card) 70%, transparent);
+        color: var(--text);
+        outline: none;
+      }
+
+      .input:focus {
+        border-color: color-mix(in oklab, var(--accent) 65%, transparent);
+        box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 18%, transparent);
+      }
+
+      .btn {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid color-mix(in oklab, var(--accent) 55%, transparent);
+        background: color-mix(in oklab, var(--accent) 18%, transparent);
+        color: var(--text);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .btn:hover {
+        background: color-mix(in oklab, var(--accent) 24%, transparent);
+      }
+
+      .btn.secondary {
+        border-color: color-mix(in oklab, var(--muted) 25%, transparent);
+        background: transparent;
+        color: var(--muted);
+      }
+
+      .btn.secondary:hover {
+        color: var(--text);
+        border-color: color-mix(in oklab, var(--muted) 40%, transparent);
+        background: color-mix(in oklab, var(--card) 45%, transparent);
+      }
+
       .todo-form input {
         flex: 1;
         min-width: 0;
@@ -315,6 +373,60 @@
           As of <span id="inv-asof">—</span>.
         </p>
 
+        <form id="inv-add-form" class="card" style="margin-top: 12px">
+          <div class="row">
+            <div class="field">
+              <label for="inv-ticker">Ticker</label>
+              <input
+                id="inv-ticker"
+                class="input"
+                name="ticker"
+                type="text"
+                placeholder="e.g. dher.de"
+                autocomplete="off"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="inv-name">Name</label>
+              <input
+                id="inv-name"
+                class="input"
+                name="name"
+                type="text"
+                placeholder="e.g. Delivery Hero"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field">
+              <label for="inv-date">Date</label>
+              <input id="inv-date" class="input" name="date" type="date" required />
+            </div>
+            <div class="field">
+              <label for="inv-shares">Shares</label>
+              <input
+                id="inv-shares"
+                class="input"
+                name="shares"
+                type="number"
+                min="0"
+                step="1"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top: 10px">
+            <button class="btn" type="submit">Add holding</button>
+            <button class="btn secondary" type="button" id="inv-refresh">
+              Refresh prices
+            </button>
+            <p class="muted" style="margin: 0">
+              Tip: prices are fetched via Stooq using a public CORS proxy.
+            </p>
+          </div>
+        </form>
+
         <div class="stats" aria-label="Investment summary">
           <div class="stat">
             <div class="label">Total invested</div>
@@ -339,17 +451,19 @@
             <thead>
               <tr>
                 <th>Asset</th>
+                <th>Ticker</th>
                 <th>Date</th>
                 <th class="num">Shares</th>
                 <th class="num">Purchase price (EUR)</th>
                 <th class="num">Current price (EUR)</th>
                 <th class="num">Invested (EUR)</th>
                 <th class="num">Current value (EUR)</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td colspan="7" class="muted">Loading…</td>
+                <td colspan="9" class="muted">Open Investments to load…</td>
               </tr>
             </tbody>
           </table>
@@ -386,9 +500,9 @@
       const DEFAULT_TAB = "#todos";
       const TAB_IDS = ["#investments", "#schedule", "#todos"];
       const STORAGE_KEY = "niklas-hemsida-todos-v1";
-
-      // Portfolio data snapshot (prices: Stooq daily closes)
-      const PORTFOLIO_DATA = {"asOf":"2025-12-23","currency":"EUR","ticker":"dher.de","lots":[{"asset":"Delivery Hero","date":"2023-04-11","shares":100,"purchaseDateUsed":"2023-04-11","purchaseClose":32.305},{"asset":"Delivery Hero","date":"2024-06-24","shares":100,"purchaseDateUsed":"2024-06-24","purchaseClose":25.92}],"latestClose":21.97,"summary":{"totalInvested":5822.5,"currentValue":4394.0,"irr":-0.12304948722578726},"series":[{"d":"2023-04-11","v":3230.5},{"d":"2023-04-20","v":3408.0},{"d":"2023-05-02","v":3724.0},{"d":"2023-05-11","v":3910.0},{"d":"2023-05-22","v":3711.0},{"d":"2023-05-31","v":3500.0},{"d":"2023-06-09","v":3575.0},{"d":"2023-06-20","v":3445.0},{"d":"2023-06-29","v":3917.0},{"d":"2023-07-10","v":3938.0},{"d":"2023-07-19","v":4267.0},{"d":"2023-07-28","v":4092.0},{"d":"2023-08-08","v":3726.0},{"d":"2023-08-17","v":3671.0},{"d":"2023-08-28","v":3494.0},{"d":"2023-09-06","v":3246.0},{"d":"2023-09-15","v":3090.0},{"d":"2023-09-26","v":2839.0},{"d":"2023-10-05","v":2650.0},{"d":"2023-10-16","v":2745.0},{"d":"2023-10-25","v":2362.0},{"d":"2023-11-03","v":2750.0},{"d":"2023-11-14","v":2970.0},{"d":"2023-11-23","v":3130.0},{"d":"2023-12-04","v":2988.0},{"d":"2023-12-13","v":2841.0},{"d":"2023-12-22","v":2393.0},{"d":"2024-01-05","v":2418.0},{"d":"2024-01-16","v":2255.0},{"d":"2024-01-25","v":2336.0},{"d":"2024-02-05","v":1740.0},{"d":"2024-02-14","v":2230.0},{"d":"2024-02-23","v":2224.0},{"d":"2024-03-05","v":2196.0},{"d":"2024-03-14","v":2630.0},{"d":"2024-03-25","v":2709.0},{"d":"2024-04-05","v":3200.0},{"d":"2024-04-16","v":2892.0},{"d":"2024-04-25","v":3079.0},{"d":"2024-05-07","v":2574.0},{"d":"2024-05-16","v":3222.0},{"d":"2024-05-27","v":2953.0},{"d":"2024-06-05","v":2850.0},{"d":"2024-06-14","v":2784.0},{"d":"2024-06-24","v":5184.0},{"d":"2024-06-25","v":5002.0},{"d":"2024-07-04","v":4268.0},{"d":"2024-07-15","v":4104.0},{"d":"2024-07-24","v":3662.0},{"d":"2024-08-02","v":3876.0},{"d":"2024-08-13","v":4216.0},{"d":"2024-08-22","v":4594.0},{"d":"2024-09-02","v":5800.0},{"d":"2024-09-11","v":5380.0},{"d":"2024-09-20","v":6006.0},{"d":"2024-10-01","v":7458.0},{"d":"2024-10-10","v":7948.0},{"d":"2024-10-21","v":7698.0},{"d":"2024-10-30","v":8000.0},{"d":"2024-11-08","v":7430.0},{"d":"2024-11-19","v":7242.0},{"d":"2024-11-28","v":7598.0},{"d":"2024-12-09","v":7116.0},{"d":"2024-12-18","v":5758.0},{"d":"2025-01-03","v":5560.0},{"d":"2025-01-14","v":5862.0},{"d":"2025-01-23","v":5082.0},{"d":"2025-02-03","v":4970.0},{"d":"2025-02-12","v":5250.0},{"d":"2025-02-21","v":5498.0},{"d":"2025-03-04","v":5434.0},{"d":"2025-03-13","v":4856.0},{"d":"2025-03-24","v":4792.0},{"d":"2025-04-02","v":4556.0},{"d":"2025-04-11","v":4464.0},{"d":"2025-04-24","v":5030.0},{"d":"2025-05-06","v":5220.0},{"d":"2025-05-15","v":5338.0},{"d":"2025-05-26","v":4968.0},{"d":"2025-06-04","v":4770.0},{"d":"2025-06-13","v":4420.0},{"d":"2025-06-24","v":4510.0},{"d":"2025-07-03","v":4734.0},{"d":"2025-07-14","v":4754.0},{"d":"2025-07-23","v":5342.0},{"d":"2025-08-01","v":5130.0},{"d":"2025-08-12","v":4770.0},{"d":"2025-08-21","v":4802.0},{"d":"2025-09-01","v":4650.0},{"d":"2025-09-10","v":5176.0},{"d":"2025-09-19","v":5560.0},{"d":"2025-09-30","v":4882.0},{"d":"2025-10-09","v":4920.0},{"d":"2025-10-20","v":4642.0},{"d":"2025-10-29","v":4614.0},{"d":"2025-11-07","v":3586.0},{"d":"2025-11-18","v":3210.0},{"d":"2025-11-27","v":3508.0},{"d":"2025-12-08","v":3839.0},{"d":"2025-12-17","v":4332.0},{"d":"2025-12-23","v":4394.0}]};
+      const INVESTMENTS_KEY = "niklas-hemsida-investments-v1";
+      const PRICE_CACHE_KEY = "niklas-hemsida-price-cache-v1";
+      const PRICE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
       const byId = (id) => document.getElementById(id);
       const $sections = TAB_IDS.map((hash) =>
@@ -432,6 +546,7 @@
 
       let investmentsInitialized = false;
       let portfolioChartRaf = 0;
+      let investmentsBusy = false;
 
       function resizeCanvasToContainer(canvas) {
         const ratio = window.devicePixelRatio || 1;
@@ -518,59 +633,560 @@
         ctx.fillText(eur.format(minV), left, H - 6);
       }
 
-      function initInvestments() {
-        if (investmentsInitialized) return;
-        investmentsInitialized = true;
+      function normalizeTicker(raw) {
+        return String(raw || "")
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, "");
+      }
 
-        byId("inv-asof").textContent = PORTFOLIO_DATA.asOf;
-        byId("inv-total-invested").textContent = eur.format(
-          PORTFOLIO_DATA.summary.totalInvested
-        );
-        byId("inv-current-value").textContent = eur.format(
-          PORTFOLIO_DATA.summary.currentValue
-        );
-        byId("inv-irr").textContent = fmtPct(PORTFOLIO_DATA.summary.irr);
-
-        // table rows
-        const tbody = document.querySelector("#investments tbody");
-        tbody.innerHTML = "";
-        for (const lot of PORTFOLIO_DATA.lots) {
-          const tr = document.createElement("tr");
-          const current = PORTFOLIO_DATA.latestClose;
-          const invested = lot.shares * lot.purchaseClose;
-          const currentValue = lot.shares * current;
-
-          const cells = [
-            { text: lot.asset },
-            { text: lot.date },
-            { text: String(lot.shares), cls: "num" },
-            { text: lot.purchaseClose.toFixed(2), cls: "num" },
-            { text: current.toFixed(2), cls: "num" },
-            { text: eur.format(invested), cls: "num" },
-            { text: eur.format(currentValue), cls: "num" },
-          ];
-
-          for (const c of cells) {
-            const td = document.createElement("td");
-            td.textContent = c.text;
-            if (c.cls) td.className = c.cls;
-            tr.appendChild(td);
-          }
-
-          tbody.appendChild(tr);
+      function loadInvestments() {
+        try {
+          const raw = localStorage.getItem(INVESTMENTS_KEY);
+          const parsed = raw ? JSON.parse(raw) : null;
+          if (Array.isArray(parsed)) return parsed;
+        } catch {
+          // ignore
         }
 
-        // chart
-        const canvas = byId("portfolio-chart");
-        const series = PORTFOLIO_DATA.series;
+        // Defaults: your Delivery Hero lots (prices are daily closes)
+        return [
+          {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+            ticker: "dher.de",
+            name: "Delivery Hero",
+            date: "2023-04-11",
+            shares: 100,
+            purchasePrice: 32.305,
+          },
+          {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + 1),
+            ticker: "dher.de",
+            name: "Delivery Hero",
+            date: "2024-06-24",
+            shares: 100,
+            purchasePrice: 25.92,
+          },
+        ];
+      }
 
-        const redraw = () => drawPortfolioChart(canvas, series);
-        redraw();
+      function saveInvestments(lots) {
+        localStorage.setItem(INVESTMENTS_KEY, JSON.stringify(lots));
+      }
 
-        window.addEventListener("resize", () => {
-          cancelAnimationFrame(portfolioChartRaf);
-          portfolioChartRaf = requestAnimationFrame(redraw);
+      function loadPriceCache() {
+        try {
+          const raw = localStorage.getItem(PRICE_CACHE_KEY);
+          const parsed = raw ? JSON.parse(raw) : null;
+          if (parsed && typeof parsed === "object") return parsed;
+        } catch {
+          // ignore
+        }
+        return {};
+      }
+
+      function savePriceCache(cache) {
+        localStorage.setItem(PRICE_CACHE_KEY, JSON.stringify(cache));
+      }
+
+      async function fetchTextViaCorsProxy(url) {
+        // Public CORS proxy (best-effort). If this ever goes down, prices can’t refresh.
+        const proxied = `https://api.allorigins.win/raw?url=${encodeURIComponent(
+          url
+        )}`;
+        const res = await fetch(proxied, { cache: "no-store" });
+        if (!res.ok) {
+          throw new Error(`Price fetch failed (${res.status})`);
+        }
+        return await res.text();
+      }
+
+      function parseStooqDailyCsv(csvText) {
+        const lines = String(csvText || "").trim().split(/\r?\n/);
+        if (lines.length < 2) return [];
+        const header = lines[0].split(",");
+        const iDate = header.indexOf("Date");
+        const iClose = header.indexOf("Close");
+        if (iDate < 0 || iClose < 0) return [];
+        const out = [];
+        for (let i = 1; i < lines.length; i++) {
+          const parts = lines[i].split(",");
+          const d = parts[iDate];
+          const c = Number(parts[iClose]);
+          if (!d || !Number.isFinite(c)) continue;
+          out.push({ d, c });
+        }
+        return out;
+      }
+
+      async function getDailyCloses(ticker, { force = false } = {}) {
+        const t = normalizeTicker(ticker);
+        const cache = loadPriceCache();
+        const entry = cache[t];
+        const now = Date.now();
+        if (
+          !force &&
+          entry &&
+          typeof entry.fetchedAt === "number" &&
+          now - entry.fetchedAt < PRICE_CACHE_MAX_AGE_MS &&
+          Array.isArray(entry.series) &&
+          entry.series.length > 10
+        ) {
+          return entry;
+        }
+
+        const url = `https://stooq.com/q/d/l/?s=${encodeURIComponent(t)}&i=d`;
+        const text = await fetchTextViaCorsProxy(url);
+        const series = parseStooqDailyCsv(text);
+        if (series.length < 10) {
+          throw new Error("Not enough price data returned");
+        }
+
+        const latest = series[series.length - 1];
+        const toSave = {
+          fetchedAt: now,
+          latestDate: latest.d,
+          latestClose: latest.c,
+          series,
+        };
+
+        cache[t] = toSave;
+        savePriceCache(cache);
+        return toSave;
+      }
+
+      function closeOnOrNext(series, dateStr) {
+        const target = String(dateStr);
+        const map = new Map(series.map((p) => [p.d, p.c]));
+        if (map.has(target)) return { used: target, close: map.get(target) };
+        const base = new Date(target + "T00:00:00Z");
+        for (let i = 1; i <= 10; i++) {
+          const d = new Date(base);
+          d.setUTCDate(d.getUTCDate() + i);
+          const iso = d.toISOString().slice(0, 10);
+          if (map.has(iso)) return { used: iso, close: map.get(iso) };
+        }
+        return null;
+      }
+
+      function xirr(cashflows) {
+        // cashflows: [{date: 'YYYY-MM-DD', amount: number}], irregular intervals
+        const cfs = cashflows
+          .filter((c) => c && Number.isFinite(c.amount) && c.date)
+          .map((c) => ({
+            t: Date.parse(c.date + "T00:00:00Z"),
+            a: c.amount,
+          }))
+          .sort((a, b) => a.t - b.t);
+
+        if (cfs.length < 2) return null;
+        const t0 = cfs[0].t;
+
+        const npv = (r) => {
+          if (r <= -0.999999) return Number.POSITIVE_INFINITY;
+          let s = 0;
+          for (const cf of cfs) {
+            const years = (cf.t - t0) / (365 * 24 * 60 * 60 * 1000);
+            s += cf.a / Math.pow(1 + r, years);
+          }
+          return s;
+        };
+
+        let lo = -0.9999;
+        let hi = 0.1;
+        let fLo = npv(lo);
+        let fHi = npv(hi);
+        let tries = 0;
+        while (fLo * fHi > 0 && hi < 10 && tries < 50) {
+          hi *= 2;
+          fHi = npv(hi);
+          tries++;
+        }
+        if (fLo * fHi > 0) return null;
+
+        for (let i = 0; i < 200; i++) {
+          const mid = (lo + hi) / 2;
+          const fMid = npv(mid);
+          if (Math.abs(fMid) < 1e-10) return mid;
+          if (fLo * fMid < 0) {
+            hi = mid;
+            fHi = fMid;
+          } else {
+            lo = mid;
+            fLo = fMid;
+          }
+        }
+        return (lo + hi) / 2;
+      }
+
+      async function buildPortfolio(lots, { forcePrices = false } = {}) {
+        const tickers = Array.from(
+          new Set(lots.map((l) => normalizeTicker(l.ticker)).filter(Boolean))
+        );
+        const dataByTicker = {};
+
+        for (const t of tickers) {
+          dataByTicker[t] = await getDailyCloses(t, { force: forcePrices });
+        }
+
+        // Use the earliest "latestDate" across tickers as the portfolio as-of date
+        const asOf = tickers
+          .map((t) => dataByTicker[t].latestDate)
+          .sort()[0];
+
+        const currentCloseByTicker = {};
+        for (const t of tickers) {
+          const series = dataByTicker[t].series;
+          const v = closeOnOrNext(series, asOf) || {
+            used: dataByTicker[t].latestDate,
+            close: dataByTicker[t].latestClose,
+          };
+          currentCloseByTicker[t] = v.close;
+        }
+
+        // Fill missing purchase prices from historical closes (best-effort)
+        let changed = false;
+        for (const lot of lots) {
+          const t = normalizeTicker(lot.ticker);
+          if (!t || !dataByTicker[t] || lot.purchasePrice) continue;
+          const found = closeOnOrNext(dataByTicker[t].series, lot.date);
+          if (found) {
+            lot.purchasePrice = found.close;
+            changed = true;
+          }
+        }
+        if (changed) saveInvestments(lots);
+
+        const totalInvested = lots.reduce((sum, lot) => {
+          const p = Number(lot.purchasePrice);
+          const sh = Number(lot.shares);
+          if (!Number.isFinite(p) || !Number.isFinite(sh)) return sum;
+          return sum + sh * p;
+        }, 0);
+
+        const sharesByTicker = {};
+        for (const lot of lots) {
+          const t = normalizeTicker(lot.ticker);
+          if (!t) continue;
+          sharesByTicker[t] = (sharesByTicker[t] || 0) + Number(lot.shares || 0);
+        }
+
+        const currentValue = Object.entries(sharesByTicker).reduce(
+          (sum, [t, sh]) => sum + sh * (currentCloseByTicker[t] || 0),
+          0
+        );
+
+        const cashflows = [];
+        for (const lot of lots) {
+          if (!lot.date) continue;
+          const p = Number(lot.purchasePrice);
+          const sh = Number(lot.shares);
+          if (!Number.isFinite(p) || !Number.isFinite(sh)) continue;
+          cashflows.push({ date: lot.date, amount: -sh * p });
+        }
+        cashflows.push({ date: asOf, amount: currentValue });
+        const irr = xirr(cashflows);
+
+        // Portfolio series: use union of dates from all series, compute value with last-known close
+        const start = lots
+          .map((l) => l.date)
+          .filter(Boolean)
+          .sort()[0];
+
+        const dateSet = new Set();
+        for (const t of tickers) {
+          for (const p of dataByTicker[t].series) {
+            if (p.d < start || p.d > asOf) continue;
+            dateSet.add(p.d);
+          }
+        }
+        const dates = Array.from(dateSet).sort();
+
+        const closeMapByTicker = {};
+        for (const t of tickers) {
+          closeMapByTicker[t] = new Map(dataByTicker[t].series.map((p) => [p.d, p.c]));
+        }
+
+        const lotEvents = lots
+          .map((l) => ({ d: l.date, t: normalizeTicker(l.ticker), sh: Number(l.shares || 0) }))
+          .filter((e) => e.d && e.t)
+          .sort((a, b) => a.d.localeCompare(b.d));
+
+        const heldByTicker = {};
+        let evIdx = 0;
+
+        const lastCloseByTicker = {};
+        const series = [];
+        for (let i = 0; i < dates.length; i++) {
+          const d = dates[i];
+          while (evIdx < lotEvents.length && lotEvents[evIdx].d <= d) {
+            const e = lotEvents[evIdx];
+            heldByTicker[e.t] = (heldByTicker[e.t] || 0) + e.sh;
+            evIdx++;
+          }
+          let v = 0;
+          for (const t of tickers) {
+            const m = closeMapByTicker[t];
+            const c = m.has(d) ? m.get(d) : lastCloseByTicker[t];
+            if (m.has(d)) lastCloseByTicker[t] = m.get(d);
+            const held = heldByTicker[t] || 0;
+            if (held && Number.isFinite(c)) v += held * c;
+          }
+          series.push({ d, v: Math.round(v * 100) / 100 });
+        }
+
+        // downsample for chart (weekly), keep key dates
+        const keyDates = new Set(lots.map((l) => l.date).filter(Boolean));
+        keyDates.add(asOf);
+        const down = [];
+        for (let i = 0; i < series.length; i++) {
+          const p = series[i];
+          if (keyDates.has(p.d) || i % 7 === 0 || i === series.length - 1) down.push(p);
+        }
+
+        return {
+          asOf,
+          currentCloseByTicker,
+          totalInvested,
+          currentValue,
+          irr,
+          series: down,
+        };
+      }
+
+      async function renderInvestments({ forcePrices = false } = {}) {
+        if (investmentsBusy) return;
+        investmentsBusy = true;
+        try {
+          const lots = loadInvestments();
+          saveInvestments(lots);
+
+          const tbody = document.querySelector("#investments tbody");
+          tbody.innerHTML = `<tr><td colspan=\"9\" class=\"muted\">Loading…</td></tr>`;
+
+          const portfolio = await buildPortfolio(lots, { forcePrices });
+
+          byId("inv-asof").textContent = portfolio.asOf;
+          byId("inv-total-invested").textContent = eur.format(
+            portfolio.totalInvested
+          );
+          byId("inv-current-value").textContent = eur.format(
+            portfolio.currentValue
+          );
+          byId("inv-irr").textContent = fmtPct(portfolio.irr);
+
+          // table
+          tbody.innerHTML = "";
+          for (const lot of lots) {
+            const t = normalizeTicker(lot.ticker);
+            const current = portfolio.currentCloseByTicker[t];
+            const sh = Number(lot.shares || 0);
+            const pp = Number(lot.purchasePrice);
+            const invested = Number.isFinite(pp) ? sh * pp : NaN;
+            const curVal = Number.isFinite(current) ? sh * current : NaN;
+
+            const tr = document.createElement("tr");
+            tr.dataset.id = lot.id;
+
+            const actions = document.createElement("td");
+            const editBtn = document.createElement("button");
+            editBtn.type = "button";
+            editBtn.className = "btn secondary";
+            editBtn.style.padding = "6px 10px";
+            editBtn.textContent = "Edit";
+            editBtn.addEventListener("click", () => startEditInvestment(lot.id));
+
+            const delBtn = document.createElement("button");
+            delBtn.type = "button";
+            delBtn.className = "btn secondary";
+            delBtn.style.padding = "6px 10px";
+            delBtn.style.marginLeft = "8px";
+            delBtn.textContent = "Delete";
+            delBtn.addEventListener("click", () => deleteInvestment(lot.id));
+
+            actions.appendChild(editBtn);
+            actions.appendChild(delBtn);
+
+            const cells = [
+              { text: lot.name || t || "—" },
+              { text: t || "—" },
+              { text: lot.date || "—" },
+              { text: String(sh), cls: "num" },
+              { text: Number.isFinite(pp) ? pp.toFixed(2) : "—", cls: "num" },
+              { text: Number.isFinite(current) ? current.toFixed(2) : "—", cls: "num" },
+              { text: Number.isFinite(invested) ? eur.format(invested) : "—", cls: "num" },
+              { text: Number.isFinite(curVal) ? eur.format(curVal) : "—", cls: "num" },
+            ];
+
+            for (const c of cells) {
+              const td = document.createElement("td");
+              td.textContent = c.text;
+              if (c.cls) td.className = c.cls;
+              tr.appendChild(td);
+            }
+            tr.appendChild(actions);
+            tbody.appendChild(tr);
+          }
+
+          // chart
+          const canvas = byId("portfolio-chart");
+          const redraw = () => drawPortfolioChart(canvas, portfolio.series);
+          redraw();
+          window.addEventListener("resize", () => {
+            cancelAnimationFrame(portfolioChartRaf);
+            portfolioChartRaf = requestAnimationFrame(redraw);
+          });
+        } catch (e) {
+          const tbody = document.querySelector("#investments tbody");
+          tbody.innerHTML = `<tr><td colspan=\"9\" class=\"muted\">Could not load prices. Try “Refresh prices”.</td></tr>`;
+          byId("inv-irr").textContent = "—";
+        } finally {
+          investmentsBusy = false;
+        }
+      }
+
+      function deleteInvestment(id) {
+        const lots = loadInvestments();
+        const next = lots.filter((l) => l.id !== id);
+        saveInvestments(next);
+        renderInvestments();
+      }
+
+      function startEditInvestment(id) {
+        const lots = loadInvestments();
+        const lot = lots.find((l) => l.id === id);
+        if (!lot) return;
+
+        const tr = document.querySelector(`#investments tbody tr[data-id=\"${id}\"]`);
+        if (!tr) return;
+
+        tr.innerHTML = "";
+
+        const makeInputCell = (value, type = "text", cls = "") => {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.className = `input ${cls}`.trim();
+          input.type = type;
+          input.value = value ?? "";
+          input.style.padding = "8px 10px";
+          input.style.width = "100%";
+          td.appendChild(input);
+          return { td, input };
+        };
+
+        const cName = makeInputCell(lot.name || "", "text");
+        const cTicker = makeInputCell(normalizeTicker(lot.ticker), "text");
+        const cDate = makeInputCell(lot.date || "", "date");
+        const cShares = makeInputCell(String(lot.shares ?? 0), "number");
+        cShares.input.min = "0";
+        cShares.input.step = "1";
+        const cPurchase = makeInputCell(
+          lot.purchasePrice != null ? String(lot.purchasePrice) : "",
+          "number"
+        );
+        cPurchase.input.step = "0.01";
+
+        const tdCurPrice = document.createElement("td");
+        tdCurPrice.className = "num";
+        tdCurPrice.textContent = "—";
+
+        const tdInvested = document.createElement("td");
+        tdInvested.className = "num";
+        tdInvested.textContent = "—";
+
+        const tdCurVal = document.createElement("td");
+        tdCurVal.className = "num";
+        tdCurVal.textContent = "—";
+
+        const tdActions = document.createElement("td");
+        const saveBtn = document.createElement("button");
+        saveBtn.type = "button";
+        saveBtn.className = "btn";
+        saveBtn.style.padding = "6px 10px";
+        saveBtn.textContent = "Save";
+        saveBtn.addEventListener("click", () => {
+          const next = lots.map((l) => {
+            if (l.id !== id) return l;
+            return {
+              ...l,
+              name: cName.input.value.trim(),
+              ticker: normalizeTicker(cTicker.input.value),
+              date: cDate.input.value,
+              shares: Number(cShares.input.value),
+              purchasePrice:
+                cPurchase.input.value.trim() === ""
+                  ? null
+                  : Number(cPurchase.input.value),
+            };
+          });
+          saveInvestments(next);
+          renderInvestments({ forcePrices: true });
         });
+
+        const cancelBtn = document.createElement("button");
+        cancelBtn.type = "button";
+        cancelBtn.className = "btn secondary";
+        cancelBtn.style.padding = "6px 10px";
+        cancelBtn.style.marginLeft = "8px";
+        cancelBtn.textContent = "Cancel";
+        cancelBtn.addEventListener("click", () => renderInvestments());
+
+        tdActions.appendChild(saveBtn);
+        tdActions.appendChild(cancelBtn);
+
+        const cells = [
+          cName.td,
+          cTicker.td,
+          cDate.td,
+          cShares.td,
+          cPurchase.td,
+          tdCurPrice,
+          tdInvested,
+          tdCurVal,
+          tdActions,
+        ];
+        for (const td of cells) tr.appendChild(td);
+      }
+
+      function initInvestments() {
+        if (!investmentsInitialized) {
+          investmentsInitialized = true;
+
+          // Hook up add form + refresh button
+          byId("inv-add-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const ticker = normalizeTicker(byId("inv-ticker").value);
+            const name = byId("inv-name").value.trim();
+            const date = byId("inv-date").value;
+            const shares = Number(byId("inv-shares").value);
+            if (!ticker || !date || !Number.isFinite(shares)) return;
+
+            const lots = loadInvestments();
+            lots.push({
+              id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+              ticker,
+              name,
+              date,
+              shares,
+              purchasePrice: null,
+            });
+            saveInvestments(lots);
+
+            byId("inv-ticker").value = "";
+            byId("inv-name").value = "";
+            byId("inv-date").value = "";
+            byId("inv-shares").value = "";
+            byId("inv-ticker").focus();
+
+            await renderInvestments({ forcePrices: true });
+          });
+
+          byId("inv-refresh").addEventListener("click", () =>
+            renderInvestments({ forcePrices: true })
+          );
+        }
+
+        renderInvestments();
       }
 
       function loadTodos() {
