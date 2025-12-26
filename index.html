@@ -376,7 +376,8 @@
       <div class="topbar-inner">
         <nav aria-label="Menu">
           <ul>
-            <li><a href="#investments">Investments</a></li>
+            <li><a href="#nils-investments">Nils Investments</a></li>
+            <li><a href="#niklas-investments">Niklas Investments</a></li>
             <li><a href="#schedule">Schedule</a></li>
             <li><a href="#todos">Todos</a></li>
           </ul>
@@ -385,32 +386,32 @@
     </div>
 
     <main class="panel">
-      <section id="investments" class="card" hidden>
-        <h2>Investments</h2>
+      <section id="nils-investments" class="card" hidden>
+        <h2>Nils Investments</h2>
         <p class="muted">
           Total invested, current value, and purchase history (EUR).
-          As of <span id="inv-asof">—</span>.
+          As of <span id="nils-inv-asof">—</span>.
         </p>
-        <p class="muted" id="inv-warn" style="display: none; margin-top: 8px"></p>
+        <p class="muted" id="nils-inv-warn" style="display: none; margin-top: 8px"></p>
 
         <div class="stats" aria-label="Investment summary">
           <div class="stat">
             <div class="label">Total invested</div>
-            <div class="value" id="inv-total-invested">—</div>
+            <div class="value" id="nils-inv-total-invested">—</div>
           </div>
           <div class="stat">
             <div class="label">Current total value</div>
-            <div class="value" id="inv-current-value">—</div>
+            <div class="value" id="nils-inv-current-value">—</div>
           </div>
           <div class="stat">
             <div class="label">IRR (annualized)</div>
-            <div class="value" id="inv-irr">—</div>
+            <div class="value" id="nils-inv-irr">—</div>
           </div>
         </div>
 
         <div class="chart-wrap" role="region" aria-label="Portfolio value chart">
-          <canvas id="portfolio-chart"></canvas>
-          <div id="portfolio-tooltip" class="tooltip"></div>
+          <canvas id="nils-portfolio-chart"></canvas>
+          <div id="nils-portfolio-tooltip" class="tooltip"></div>
         </div>
 
         <div class="table-wrap" role="region" aria-label="Investments table">
@@ -432,18 +433,18 @@
             </thead>
             <tbody>
               <tr>
-                <td colspan="11" class="muted">Open Investments to load…</td>
+                <td colspan="11" class="muted">Open Nils Investments to load…</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <form id="inv-add-form" class="card" style="margin-top: 12px">
+        <form id="nils-inv-add-form" class="card" style="margin-top: 12px">
           <div class="row">
             <div class="field" style="min-width: 260px; flex: 2">
-              <label for="inv-search">Search ticker</label>
+              <label for="nils-inv-search">Search ticker</label>
               <input
-                id="inv-search"
+                id="nils-inv-search"
                 class="input"
                 type="text"
                 placeholder="Type ticker and press Search (e.g. dher.de)"
@@ -452,13 +453,13 @@
             </div>
             <div class="field" style="min-width: 160px; flex: 0">
               <label>&nbsp;</label>
-              <button class="btn" type="button" id="inv-search-btn">
+              <button class="btn" type="button" id="nils-inv-search-btn">
                 Search
               </button>
             </div>
             <div class="field" style="min-width: 240px; flex: 3">
               <label>Result</label>
-              <div id="inv-search-result" class="muted" style="padding: 10px 0">
+              <div id="nils-inv-search-result" class="muted" style="padding: 10px 0">
                 —
               </div>
             </div>
@@ -466,9 +467,9 @@
 
           <div class="row">
             <div class="field">
-              <label for="inv-ticker">Ticker</label>
+              <label for="nils-inv-ticker">Ticker</label>
               <input
-                id="inv-ticker"
+                id="nils-inv-ticker"
                 class="input"
                 name="ticker"
                 type="text"
@@ -478,9 +479,9 @@
               />
             </div>
             <div class="field">
-              <label for="inv-name">Name</label>
+              <label for="nils-inv-name">Name</label>
               <input
-                id="inv-name"
+                id="nils-inv-name"
                 class="input"
                 name="name"
                 type="text"
@@ -489,13 +490,13 @@
               />
             </div>
             <div class="field">
-              <label for="inv-date">Date</label>
-              <input id="inv-date" class="input" name="date" type="date" required />
+              <label for="nils-inv-date">Date</label>
+              <input id="nils-inv-date" class="input" name="date" type="date" required />
             </div>
             <div class="field">
-              <label for="inv-shares">Shares</label>
+              <label for="nils-inv-shares">Shares</label>
               <input
-                id="inv-shares"
+                id="nils-inv-shares"
                 class="input"
                 name="shares"
                 type="number"
@@ -508,16 +509,174 @@
 
           <div class="row" style="margin-top: 10px">
             <button class="btn" type="submit">Add holding</button>
-            <button class="btn secondary" type="button" id="inv-refresh">
+            <button class="btn secondary" type="button" id="nils-inv-refresh">
               Refresh prices
             </button>
-            <button class="btn secondary" type="button" id="inv-export">
+            <button class="btn secondary" type="button" id="nils-inv-export">
               Export
             </button>
-            <button class="btn secondary" type="button" id="inv-import">
+            <button class="btn secondary" type="button" id="nils-inv-import">
               Import
             </button>
-            <button class="btn secondary" type="button" id="inv-restore">
+            <button class="btn secondary" type="button" id="nils-inv-restore">
+              Restore defaults
+            </button>
+            <p class="muted" style="margin: 0">
+              Tip: search validates by fetching Stooq prices via a public CORS proxy.
+            </p>
+          </div>
+        </form>
+      </section>
+
+      <section id="niklas-investments" class="card" hidden>
+        <h2>Niklas Investments</h2>
+        <p class="muted">
+          Total invested, current value, and purchase history (EUR).
+          As of <span id="niklas-inv-asof">—</span>.
+        </p>
+        <p
+          class="muted"
+          id="niklas-inv-warn"
+          style="display: none; margin-top: 8px"
+        ></p>
+
+        <div class="stats" aria-label="Investment summary">
+          <div class="stat">
+            <div class="label">Total invested</div>
+            <div class="value" id="niklas-inv-total-invested">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">Current total value</div>
+            <div class="value" id="niklas-inv-current-value">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">IRR (annualized)</div>
+            <div class="value" id="niklas-inv-irr">—</div>
+          </div>
+        </div>
+
+        <div class="chart-wrap" role="region" aria-label="Portfolio value chart">
+          <canvas id="niklas-portfolio-chart"></canvas>
+          <div id="niklas-portfolio-tooltip" class="tooltip"></div>
+        </div>
+
+        <div class="table-wrap" role="region" aria-label="Investments table">
+          <table>
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>Ticker</th>
+                <th>Date</th>
+                <th class="num">Shares</th>
+                <th class="num">Purchase<br />price (EUR)</th>
+                <th class="num">Current<br />price (EUR)</th>
+                <th class="num">Invested<br />(EUR)</th>
+                <th class="num">Current<br />value (EUR)</th>
+                <th class="num">Return<br />(to date)</th>
+                <th class="num">IRR<br />(annual)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="11" class="muted">
+                  Open Niklas Investments to load…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <form id="niklas-inv-add-form" class="card" style="margin-top: 12px">
+          <div class="row">
+            <div class="field" style="min-width: 260px; flex: 2">
+              <label for="niklas-inv-search">Search ticker</label>
+              <input
+                id="niklas-inv-search"
+                class="input"
+                type="text"
+                placeholder="Type ticker and press Search (e.g. tsla.us)"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field" style="min-width: 160px; flex: 0">
+              <label>&nbsp;</label>
+              <button class="btn" type="button" id="niklas-inv-search-btn">
+                Search
+              </button>
+            </div>
+            <div class="field" style="min-width: 240px; flex: 3">
+              <label>Result</label>
+              <div
+                id="niklas-inv-search-result"
+                class="muted"
+                style="padding: 10px 0"
+              >
+                —
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="niklas-inv-ticker">Ticker</label>
+              <input
+                id="niklas-inv-ticker"
+                class="input"
+                name="ticker"
+                type="text"
+                placeholder="e.g. tsla.us"
+                autocomplete="off"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="niklas-inv-name">Name</label>
+              <input
+                id="niklas-inv-name"
+                class="input"
+                name="name"
+                type="text"
+                placeholder="e.g. Tesla"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field">
+              <label for="niklas-inv-date">Date</label>
+              <input
+                id="niklas-inv-date"
+                class="input"
+                name="date"
+                type="date"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="niklas-inv-shares">Shares</label>
+              <input
+                id="niklas-inv-shares"
+                class="input"
+                name="shares"
+                type="number"
+                min="0"
+                step="1"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top: 10px">
+            <button class="btn" type="submit">Add holding</button>
+            <button class="btn secondary" type="button" id="niklas-inv-refresh">
+              Refresh prices
+            </button>
+            <button class="btn secondary" type="button" id="niklas-inv-export">
+              Export
+            </button>
+            <button class="btn secondary" type="button" id="niklas-inv-import">
+              Import
+            </button>
+            <button class="btn secondary" type="button" id="niklas-inv-restore">
               Restore defaults
             </button>
             <p class="muted" style="margin: 0">
@@ -555,10 +714,17 @@
 
     <script>
       const DEFAULT_TAB = "#todos";
-      const TAB_IDS = ["#investments", "#schedule", "#todos"];
+      const TAB_IDS = [
+        "#nils-investments",
+        "#niklas-investments",
+        "#schedule",
+        "#todos",
+      ];
       const STORAGE_KEY = "niklas-hemsida-todos-v1";
-      const INVESTMENTS_KEY = "niklas-hemsida-investments-v1";
-      const INVESTMENTS_SEED_KEY = "niklas-hemsida-investments-seed-v2";
+      const NILS_INVESTMENTS_KEY = "nils-hemsida-investments-v1";
+      const NILS_INVESTMENTS_SEED_KEY = "nils-hemsida-investments-seed-v2";
+      const NIKLAS_INVESTMENTS_KEY = "niklas-hemsida-investments-v1";
+      const NIKLAS_INVESTMENTS_SEED_KEY = "niklas-hemsida-investments-seed-v1";
       const PRICE_CACHE_KEY = "niklas-hemsida-price-cache-v1";
       const PRICE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
@@ -595,19 +761,20 @@
           );
         }
 
-        if (active === "#investments") {
-          initInvestments();
+        if (active === "#nils-investments") {
+          nilsApp.init();
+        }
+        if (active === "#niklas-investments") {
+          niklasApp.init();
         }
 
         return active;
       }
 
-      let investmentsInitialized = false;
-      let portfolioChartRaf = 0;
-      let investmentsBusy = false;
-      let activePortfolioSeries = null;
-      let activeHoverIndex = null;
-      let chartLayout = null;
+      // Back-compat: if someone has old #investments link, redirect to Nils
+      if (location.hash === "#investments") {
+        history.replaceState(null, "", "#nils-investments");
+      }
 
       function resizeCanvasToContainer(canvas) {
         const ratio = window.devicePixelRatio || 1;
@@ -785,7 +952,7 @@
           .replace(/\s+/g, "");
       }
 
-      function defaultInvestments() {
+      function defaultNilsInvestments() {
         return [
           {
             id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
@@ -822,21 +989,9 @@
         ];
       }
 
-      function loadInvestments() {
-        try {
-          const raw = localStorage.getItem(INVESTMENTS_KEY);
-          const parsed = raw ? JSON.parse(raw) : null;
-          if (Array.isArray(parsed)) return parsed;
-        } catch {
-          // ignore
-        }
-
-        // Defaults (seed): your known lots
-        return defaultInvestments();
-      }
-
-      function saveInvestments(lots) {
-        localStorage.setItem(INVESTMENTS_KEY, JSON.stringify(lots));
+      function defaultNiklasInvestments() {
+        // Start empty: Niklas can add different holdings here
+        return [];
       }
 
       function loadPriceCache() {
@@ -984,7 +1139,7 @@
         return (lo + hi) / 2;
       }
 
-      async function buildPortfolio(lots, { forcePrices = false } = {}) {
+      async function buildPortfolio(lots, { forcePrices = false, saveLots } = {}) {
         const tickers = Array.from(
           new Set(lots.map((l) => normalizeTicker(l.ticker)).filter(Boolean))
         );
@@ -1027,7 +1182,7 @@
             changed = true;
           }
         }
-        if (changed) saveInvestments(lots);
+        if (changed && typeof saveLots === "function") saveLots(lots);
 
         const totalInvested = lots.reduce((sum, lot) => {
           if (lot.purchasePrice == null) return sum;
@@ -1148,327 +1303,364 @@
         };
       }
 
-      async function renderInvestments({ forcePrices = false } = {}) {
-        if (investmentsBusy) return;
-        investmentsBusy = true;
-        try {
-          const lots = loadInvestments();
-          saveInvestments(lots);
+      function makeInvestmentsApp(opts) {
+        const {
+          sectionId,
+          prefix,
+          storageKey,
+          seedKey,
+          defaults,
+          migrateFromKey,
+        } = opts;
 
-          const tbody = document.querySelector("#investments tbody");
-          tbody.innerHTML = `<tr><td colspan=\"11\" class=\"muted\">Loading…</td></tr>`;
+        let initialized = false;
+        let busy = false;
+        let raf = 0;
+        let activeSeries = null;
+        let hoverIndex = null;
+        let layout = null;
 
-          const portfolio = await buildPortfolio(lots, { forcePrices });
+        const sid = (suffix) => `${prefix}-${suffix}`;
+        const el = (suffix) => byId(sid(suffix));
+        const tbody = () => document.querySelector(`#${sectionId} tbody`);
 
-          byId("inv-asof").textContent = portfolio.asOf || "—";
-          byId("inv-total-invested").textContent = eur.format(
-            portfolio.totalInvested
-          );
-          byId("inv-current-value").textContent = eur.format(
-            portfolio.currentValue
-          );
-          byId("inv-irr").textContent = fmtPct(portfolio.irr);
-
-          const warn = byId("inv-warn");
-          if (portfolio.failedTickers && portfolio.failedTickers.length) {
-            warn.style.display = "";
-            warn.textContent = `Could not load prices for: ${portfolio.failedTickers.join(
-              ", "
-            )}. The rest of the portfolio is still shown.`;
-          } else {
-            warn.style.display = "none";
-            warn.textContent = "";
+        const loadLots = () => {
+          try {
+            const raw = localStorage.getItem(storageKey);
+            const parsed = raw ? JSON.parse(raw) : null;
+            if (Array.isArray(parsed)) return parsed;
+          } catch {
+            // ignore
           }
 
-          // table
-          tbody.innerHTML = "";
-          for (const lot of lots) {
-            const t = normalizeTicker(lot.ticker);
-            const current = portfolio.currentCloseByTicker[t];
-            const sh = Number(lot.shares || 0);
-            const pp =
-              lot.purchasePrice == null ? NaN : Number(lot.purchasePrice);
-            const invested = Number.isFinite(pp) ? sh * pp : NaN;
-            const curVal = Number.isFinite(current) ? sh * current : NaN;
-            const rowReturn =
-              Number.isFinite(invested) && invested > 0 && Number.isFinite(curVal)
-                ? (curVal - invested) / invested
-                : NaN;
-            const rowIrr =
-              portfolio.asOf &&
-              Number.isFinite(invested) &&
-              invested > 0 &&
-              Number.isFinite(curVal) &&
-              curVal > 0
-                ? xirr([
-                    { date: lot.date, amount: -invested },
-                    { date: portfolio.asOf, amount: curVal },
-                  ])
-                : NaN;
-
-            const tr = document.createElement("tr");
-            tr.dataset.id = lot.id;
-
-            const actions = document.createElement("td");
-            const editBtn = document.createElement("button");
-            editBtn.type = "button";
-            editBtn.className = "btn secondary";
-            editBtn.style.padding = "6px 10px";
-            editBtn.textContent = "Edit";
-            editBtn.addEventListener("click", () => startEditInvestment(lot.id));
-
-            const delBtn = document.createElement("button");
-            delBtn.type = "button";
-            delBtn.className = "btn secondary";
-            delBtn.style.padding = "6px 10px";
-            delBtn.style.marginLeft = "8px";
-            delBtn.textContent = "Delete";
-            delBtn.addEventListener("click", () => deleteInvestment(lot.id));
-
-            actions.appendChild(editBtn);
-            actions.appendChild(delBtn);
-
-            const cells = [
-              { text: lot.name || t || "—" },
-              { text: t || "—" },
-              { text: lot.date || "—" },
-              { text: String(sh), cls: "num" },
-              { text: Number.isFinite(pp) ? pp.toFixed(2) : "—", cls: "num" },
-              { text: Number.isFinite(current) ? current.toFixed(2) : "—", cls: "num" },
-              { text: Number.isFinite(invested) ? eur.format(invested) : "—", cls: "num" },
-              { text: Number.isFinite(curVal) ? eur.format(curVal) : "—", cls: "num" },
-              { text: Number.isFinite(rowReturn) ? fmtPct(rowReturn) : "—", cls: "num" },
-              { text: Number.isFinite(rowIrr) ? fmtPct(rowIrr) : "—", cls: "num" },
-            ];
-
-            for (const c of cells) {
-              const td = document.createElement("td");
-              td.textContent = c.text;
-              if (c.cls) td.className = c.cls;
-              tr.appendChild(td);
+          // migrate old key if available
+          if (migrateFromKey) {
+            try {
+              const raw = localStorage.getItem(migrateFromKey);
+              const parsed = raw ? JSON.parse(raw) : null;
+              if (Array.isArray(parsed)) {
+                localStorage.setItem(storageKey, JSON.stringify(parsed));
+                return parsed;
+              }
+            } catch {
+              // ignore
             }
-            tr.appendChild(actions);
-            tbody.appendChild(tr);
           }
 
-          // chart
-          const canvas = byId("portfolio-chart");
-          activePortfolioSeries = portfolio.series;
-          const redraw = () =>
-            drawPortfolioChart(canvas, activePortfolioSeries, activeHoverIndex);
-          redraw();
-          window.addEventListener("resize", () => {
-            cancelAnimationFrame(portfolioChartRaf);
-            portfolioChartRaf = requestAnimationFrame(redraw);
-          });
-        } catch (e) {
-          const tbody = document.querySelector("#investments tbody");
-          tbody.innerHTML = `<tr><td colspan=\"11\" class=\"muted\">Could not load prices. Try “Refresh prices”.</td></tr>`;
-          byId("inv-irr").textContent = "—";
-        } finally {
-          investmentsBusy = false;
-        }
-      }
-
-      function deleteInvestment(id) {
-        const lots = loadInvestments();
-        const next = lots.filter((l) => l.id !== id);
-        saveInvestments(next);
-        renderInvestments();
-      }
-
-      function startEditInvestment(id) {
-        const lots = loadInvestments();
-        const lot = lots.find((l) => l.id === id);
-        if (!lot) return;
-
-        const tr = document.querySelector(`#investments tbody tr[data-id=\"${id}\"]`);
-        if (!tr) return;
-
-        tr.innerHTML = "";
-
-        const makeInputCell = (value, type = "text", cls = "") => {
-          const td = document.createElement("td");
-          const input = document.createElement("input");
-          input.className = `input ${cls}`.trim();
-          input.type = type;
-          input.value = value ?? "";
-          input.style.padding = "8px 10px";
-          input.style.width = "100%";
-          td.appendChild(input);
-          return { td, input };
+          return defaults();
         };
 
-        const cName = makeInputCell(lot.name || "", "text");
-        const cTicker = makeInputCell(normalizeTicker(lot.ticker), "text");
-        const cDate = makeInputCell(lot.date || "", "date");
-        const cShares = makeInputCell(String(lot.shares ?? 0), "number");
-        cShares.input.min = "0";
-        cShares.input.step = "1";
-        const cPurchase = makeInputCell(
-          lot.purchasePrice != null ? String(lot.purchasePrice) : "",
-          "number"
-        );
-        cPurchase.input.step = "0.01";
+        const saveLots = (lots) => {
+          localStorage.setItem(storageKey, JSON.stringify(lots));
+        };
 
-        const tdCurPrice = document.createElement("td");
-        tdCurPrice.className = "num";
-        tdCurPrice.textContent = "—";
+        const setWarn = (text) => {
+          const w = el("inv-warn");
+          if (!text) {
+            w.style.display = "none";
+            w.textContent = "";
+            return;
+          }
+          w.style.display = "";
+          w.textContent = text;
+        };
 
-        const tdInvested = document.createElement("td");
-        tdInvested.className = "num";
-        tdInvested.textContent = "—";
+        const setSearchResult = (text, isError = false) => {
+          const r = el("inv-search-result");
+          r.textContent = text;
+          r.style.color = isError ? "tomato" : "";
+        };
 
-        const tdCurVal = document.createElement("td");
-        tdCurVal.className = "num";
-        tdCurVal.textContent = "—";
-
-        const tdReturn = document.createElement("td");
-        tdReturn.className = "num";
-        tdReturn.textContent = "—";
-
-        const tdRowIrr = document.createElement("td");
-        tdRowIrr.className = "num";
-        tdRowIrr.textContent = "—";
-
-        const tdActions = document.createElement("td");
-        const saveBtn = document.createElement("button");
-        saveBtn.type = "button";
-        saveBtn.className = "btn";
-        saveBtn.style.padding = "6px 10px";
-        saveBtn.textContent = "Save";
-        saveBtn.addEventListener("click", () => {
-          const next = lots.map((l) => {
-            if (l.id !== id) return l;
-            return {
-              ...l,
-              name: cName.input.value.trim(),
-              ticker: normalizeTicker(cTicker.input.value),
-              date: cDate.input.value,
-              shares: Number(cShares.input.value),
-              purchasePrice:
-                cPurchase.input.value.trim() === ""
-                  ? null
-                  : Number(cPurchase.input.value),
-            };
-          });
-          saveInvestments(next);
-          renderInvestments({ forcePrices: true });
-        });
-
-        const cancelBtn = document.createElement("button");
-        cancelBtn.type = "button";
-        cancelBtn.className = "btn secondary";
-        cancelBtn.style.padding = "6px 10px";
-        cancelBtn.style.marginLeft = "8px";
-        cancelBtn.textContent = "Cancel";
-        cancelBtn.addEventListener("click", () => renderInvestments());
-
-        tdActions.appendChild(saveBtn);
-        tdActions.appendChild(cancelBtn);
-
-        const cells = [
-          cName.td,
-          cTicker.td,
-          cDate.td,
-          cShares.td,
-          cPurchase.td,
-          tdCurPrice,
-          tdInvested,
-          tdCurVal,
-          tdReturn,
-          tdRowIrr,
-          tdActions,
-        ];
-        for (const td of cells) tr.appendChild(td);
-      }
-
-      function initInvestments() {
-        if (!investmentsInitialized) {
-          investmentsInitialized = true;
-
-          // Seed requested lots once (won't overwrite your existing portfolio)
+        const render = async ({ forcePrices = false } = {}) => {
+          if (busy) return;
+          busy = true;
           try {
-            const seeded = localStorage.getItem(INVESTMENTS_SEED_KEY) === "1";
+            const lots = loadLots();
+            saveLots(lots);
+
+            const tb = tbody();
+            tb.innerHTML = `<tr><td colspan=\"11\" class=\"muted\">Loading…</td></tr>`;
+
+            const portfolio = await buildPortfolio(lots, {
+              forcePrices,
+              saveLots,
+            });
+
+            el("inv-asof").textContent = portfolio.asOf || "—";
+            el("inv-total-invested").textContent = eur.format(
+              portfolio.totalInvested
+            );
+            el("inv-current-value").textContent = eur.format(
+              portfolio.currentValue
+            );
+            el("inv-irr").textContent = fmtPct(portfolio.irr);
+
+            if (portfolio.failedTickers && portfolio.failedTickers.length) {
+              setWarn(
+                `Could not load prices for: ${portfolio.failedTickers.join(
+                  ", "
+                )}. The rest of the portfolio is still shown.`
+              );
+            } else {
+              setWarn("");
+            }
+
+            // table
+            tb.innerHTML = "";
+            for (const lot of lots) {
+              const t = normalizeTicker(lot.ticker);
+              const current = portfolio.currentCloseByTicker[t];
+              const sh = Number(lot.shares || 0);
+              const pp = lot.purchasePrice == null ? NaN : Number(lot.purchasePrice);
+              const invested = Number.isFinite(pp) ? sh * pp : NaN;
+              const curVal = Number.isFinite(current) ? sh * current : NaN;
+              const rowReturn =
+                Number.isFinite(invested) && invested > 0 && Number.isFinite(curVal)
+                  ? (curVal - invested) / invested
+                  : NaN;
+              const rowIrr =
+                portfolio.asOf &&
+                Number.isFinite(invested) &&
+                invested > 0 &&
+                Number.isFinite(curVal) &&
+                curVal > 0
+                  ? xirr([
+                      { date: lot.date, amount: -invested },
+                      { date: portfolio.asOf, amount: curVal },
+                    ])
+                  : NaN;
+
+              const tr = document.createElement("tr");
+              tr.dataset.id = lot.id;
+
+              const actions = document.createElement("td");
+              const editBtn = document.createElement("button");
+              editBtn.type = "button";
+              editBtn.className = "btn secondary";
+              editBtn.style.padding = "6px 10px";
+              editBtn.textContent = "Edit";
+              editBtn.addEventListener("click", () => startEdit(lot.id));
+
+              const delBtn = document.createElement("button");
+              delBtn.type = "button";
+              delBtn.className = "btn secondary";
+              delBtn.style.padding = "6px 10px";
+              delBtn.style.marginLeft = "8px";
+              delBtn.textContent = "Delete";
+              delBtn.addEventListener("click", () => del(lot.id));
+
+              actions.appendChild(editBtn);
+              actions.appendChild(delBtn);
+
+              const cells = [
+                { text: lot.name || t || "—" },
+                { text: t || "—" },
+                { text: lot.date || "—" },
+                { text: String(sh), cls: "num" },
+                { text: Number.isFinite(pp) ? pp.toFixed(2) : "—", cls: "num" },
+                { text: Number.isFinite(current) ? current.toFixed(2) : "—", cls: "num" },
+                { text: Number.isFinite(invested) ? eur.format(invested) : "—", cls: "num" },
+                { text: Number.isFinite(curVal) ? eur.format(curVal) : "—", cls: "num" },
+                { text: Number.isFinite(rowReturn) ? fmtPct(rowReturn) : "—", cls: "num" },
+                { text: Number.isFinite(rowIrr) ? fmtPct(rowIrr) : "—", cls: "num" },
+              ];
+
+              for (const c of cells) {
+                const td = document.createElement("td");
+                td.textContent = c.text;
+                if (c.cls) td.className = c.cls;
+                tr.appendChild(td);
+              }
+              tr.appendChild(actions);
+              tb.appendChild(tr);
+            }
+
+            // chart
+            const canvas = el("portfolio-chart");
+            activeSeries = portfolio.series;
+            const redraw = () => {
+              // stash layout for hover
+              drawPortfolioChart(canvas, activeSeries, hoverIndex);
+              layout = chartLayout; // from drawPortfolioChart
+            };
+            redraw();
+            window.addEventListener("resize", () => {
+              cancelAnimationFrame(raf);
+              raf = requestAnimationFrame(redraw);
+            });
+          } catch {
+            const tb = tbody();
+            tb.innerHTML = `<tr><td colspan=\"11\" class=\"muted\">Could not load prices. Try “Refresh prices”.</td></tr>`;
+            el("inv-irr").textContent = "—";
+          } finally {
+            busy = false;
+          }
+        };
+
+        const del = (id) => {
+          const lots = loadLots();
+          const next = lots.filter((l) => l.id !== id);
+          saveLots(next);
+          render();
+        };
+
+        const startEdit = (id) => {
+          const lots = loadLots();
+          const lot = lots.find((l) => l.id === id);
+          if (!lot) return;
+
+          const tr = document.querySelector(`#${sectionId} tbody tr[data-id=\"${id}\"]`);
+          if (!tr) return;
+
+          tr.innerHTML = "";
+
+          const makeInputCell = (value, type = "text", cls = "") => {
+            const td = document.createElement("td");
+            const input = document.createElement("input");
+            input.className = `input ${cls}`.trim();
+            input.type = type;
+            input.value = value ?? "";
+            input.style.padding = "8px 10px";
+            input.style.width = "100%";
+            td.appendChild(input);
+            return { td, input };
+          };
+
+          const cName = makeInputCell(lot.name || "", "text");
+          const cTicker = makeInputCell(normalizeTicker(lot.ticker), "text");
+          const cDate = makeInputCell(lot.date || "", "date");
+          const cShares = makeInputCell(String(lot.shares ?? 0), "number");
+          cShares.input.min = "0";
+          cShares.input.step = "1";
+          const cPurchase = makeInputCell(
+            lot.purchasePrice != null ? String(lot.purchasePrice) : "",
+            "number"
+          );
+          cPurchase.input.step = "0.01";
+
+          const tdCurPrice = document.createElement("td");
+          tdCurPrice.className = "num";
+          tdCurPrice.textContent = "—";
+
+          const tdInvested = document.createElement("td");
+          tdInvested.className = "num";
+          tdInvested.textContent = "—";
+
+          const tdCurVal = document.createElement("td");
+          tdCurVal.className = "num";
+          tdCurVal.textContent = "—";
+
+          const tdReturn = document.createElement("td");
+          tdReturn.className = "num";
+          tdReturn.textContent = "—";
+
+          const tdRowIrr = document.createElement("td");
+          tdRowIrr.className = "num";
+          tdRowIrr.textContent = "—";
+
+          const tdActions = document.createElement("td");
+          const saveBtn = document.createElement("button");
+          saveBtn.type = "button";
+          saveBtn.className = "btn";
+          saveBtn.style.padding = "6px 10px";
+          saveBtn.textContent = "Save";
+          saveBtn.addEventListener("click", () => {
+            const next = lots.map((l) => {
+              if (l.id !== id) return l;
+              return {
+                ...l,
+                name: cName.input.value.trim(),
+                ticker: normalizeTicker(cTicker.input.value),
+                date: cDate.input.value,
+                shares: Number(cShares.input.value),
+                purchasePrice:
+                  cPurchase.input.value.trim() === ""
+                    ? null
+                    : Number(cPurchase.input.value),
+              };
+            });
+            saveLots(next);
+            render({ forcePrices: true });
+          });
+
+          const cancelBtn = document.createElement("button");
+          cancelBtn.type = "button";
+          cancelBtn.className = "btn secondary";
+          cancelBtn.style.padding = "6px 10px";
+          cancelBtn.style.marginLeft = "8px";
+          cancelBtn.textContent = "Cancel";
+          cancelBtn.addEventListener("click", () => render());
+
+          tdActions.appendChild(saveBtn);
+          tdActions.appendChild(cancelBtn);
+
+          const cells = [
+            cName.td,
+            cTicker.td,
+            cDate.td,
+            cShares.td,
+            cPurchase.td,
+            tdCurPrice,
+            tdInvested,
+            tdCurVal,
+            tdReturn,
+            tdRowIrr,
+            tdActions,
+          ];
+          for (const td of cells) tr.appendChild(td);
+        };
+
+        const init = () => {
+          if (initialized) return;
+          initialized = true;
+
+          // Optional one-time seeding
+          try {
+            const seeded = localStorage.getItem(seedKey) === "1";
             if (!seeded) {
-              const lots = loadInvestments();
-              const hasTicker = (t) =>
-                lots.some((l) => normalizeTicker(l.ticker) === normalizeTicker(t));
-
-              if (!hasTicker("tsla.us")) {
-                lots.push({
-                  id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-                  ticker: "tsla.us",
-                  name: "Tesla",
-                  date: "2024-10-15",
-                  shares: 1,
-                  purchasePrice: null,
-                });
-              }
-              if (!hasTicker("nvda.us")) {
-                lots.push({
-                  id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + 1),
-                  ticker: "nvda.us",
-                  name: "Nvidia",
-                  date: "2025-02-12",
-                  shares: 1,
-                  purchasePrice: null,
-                });
-              }
-
-              saveInvestments(lots);
-              localStorage.setItem(INVESTMENTS_SEED_KEY, "1");
+              const lots = loadLots();
+              saveLots(lots);
+              localStorage.setItem(seedKey, "1");
             }
           } catch {
             // ignore
           }
 
-          // Hook up add form + refresh button
-          const setSearchResult = (text, isError = false) => {
-            const el = byId("inv-search-result");
-            el.textContent = text;
-            el.style.color = isError ? "tomato" : "";
-          };
-
           const runTickerSearch = async () => {
-            const q = normalizeTicker(byId("inv-search").value);
+            const q = normalizeTicker(el("inv-search").value);
             if (!q) return;
             setSearchResult("Searching…");
             try {
               const data = await getDailyCloses(q, { force: true });
-              // Prefill ticker field and help user continue with date+shares
-              byId("inv-ticker").value = q;
-              if (!byId("inv-name").value.trim()) {
-                byId("inv-name").value = "";
-              }
+              el("inv-ticker").value = q;
               setSearchResult(
                 `Found ${q} • latest close ${data.latestClose.toFixed(
                   2
                 )} (as of ${data.latestDate})`
               );
-              byId("inv-date").focus();
-            } catch (e) {
+              el("inv-date").focus();
+            } catch {
               setSearchResult(`Not found / could not fetch prices for: ${q}`, true);
             }
           };
 
-          byId("inv-search-btn").addEventListener("click", runTickerSearch);
-          byId("inv-search").addEventListener("keydown", (e) => {
+          el("inv-search-btn").addEventListener("click", runTickerSearch);
+          el("inv-search").addEventListener("keydown", (e) => {
             if (e.key === "Enter") {
               e.preventDefault();
               runTickerSearch();
             }
           });
 
-          byId("inv-add-form").addEventListener("submit", async (e) => {
+          el("inv-add-form").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const ticker = normalizeTicker(byId("inv-ticker").value);
-            const name = byId("inv-name").value.trim();
-            const date = byId("inv-date").value;
-            const shares = Number(byId("inv-shares").value);
+            const ticker = normalizeTicker(el("inv-ticker").value);
+            const name = el("inv-name").value.trim();
+            const date = el("inv-date").value;
+            const shares = Number(el("inv-shares").value);
             if (!ticker || !date || !Number.isFinite(shares)) return;
 
-            const lots = loadInvestments();
+            const lots = loadLots();
             lots.push({
               id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
               ticker,
@@ -1477,23 +1669,23 @@
               shares,
               purchasePrice: null,
             });
-            saveInvestments(lots);
+            saveLots(lots);
 
-            byId("inv-ticker").value = "";
-            byId("inv-name").value = "";
-            byId("inv-date").value = "";
-            byId("inv-shares").value = "";
-            byId("inv-ticker").focus();
+            el("inv-ticker").value = "";
+            el("inv-name").value = "";
+            el("inv-date").value = "";
+            el("inv-shares").value = "";
+            el("inv-ticker").focus();
 
-            await renderInvestments({ forcePrices: true });
+            await render({ forcePrices: true });
           });
 
-          byId("inv-refresh").addEventListener("click", () =>
-            renderInvestments({ forcePrices: true })
+          el("inv-refresh").addEventListener("click", () =>
+            render({ forcePrices: true })
           );
 
-          byId("inv-export").addEventListener("click", async () => {
-            const data = JSON.stringify(loadInvestments(), null, 2);
+          el("inv-export").addEventListener("click", async () => {
+            const data = JSON.stringify(loadLots(), null, 2);
             try {
               await navigator.clipboard.writeText(data);
               setSearchResult("Exported to clipboard.");
@@ -1502,95 +1694,106 @@
             }
           });
 
-          byId("inv-import").addEventListener("click", async () => {
+          el("inv-import").addEventListener("click", async () => {
             const raw = prompt("Paste your portfolio JSON:");
             if (!raw) return;
             try {
               const parsed = JSON.parse(raw);
               if (!Array.isArray(parsed)) throw new Error("Not an array");
-              saveInvestments(parsed);
+              saveLots(parsed);
               setSearchResult("Imported portfolio.");
-              await renderInvestments({ forcePrices: true });
+              await render({ forcePrices: true });
             } catch {
               setSearchResult("Import failed (invalid JSON).", true);
             }
           });
 
-          byId("inv-restore").addEventListener("click", async () => {
-            saveInvestments(defaultInvestments());
-            localStorage.setItem(INVESTMENTS_SEED_KEY, "1");
+          el("inv-restore").addEventListener("click", async () => {
+            saveLots(defaults());
+            localStorage.setItem(seedKey, "1");
             setSearchResult("Restored default portfolio.");
-            await renderInvestments({ forcePrices: true });
+            await render({ forcePrices: true });
           });
 
           // Hover tooltip for chart
-          const canvas = byId("portfolio-chart");
-          const tip = byId("portfolio-tooltip");
+          const canvas = el("portfolio-chart");
+          const tip = el("portfolio-tooltip");
           const pctHover = new Intl.NumberFormat(undefined, {
             style: "percent",
             maximumFractionDigits: 1,
           });
 
           const hideTip = () => {
-            activeHoverIndex = null;
+            hoverIndex = null;
             tip.style.display = "none";
-            if (activePortfolioSeries) {
-              drawPortfolioChart(canvas, activePortfolioSeries, null);
+            if (activeSeries) {
+              drawPortfolioChart(canvas, activeSeries, null);
             }
           };
 
           canvas.addEventListener("mouseleave", hideTip);
           canvas.addEventListener("mousemove", (e) => {
-            if (!activePortfolioSeries || !chartLayout) return;
+            if (!activeSeries || !layout) return;
             const rect = canvas.getBoundingClientRect();
             const xCss = e.clientX - rect.left;
             const yCss = e.clientY - rect.top;
 
-            // Convert CSS pixels -> canvas pixels for layout comparisons
             const ratio = canvas.width / Math.max(1, rect.width);
             const x = xCss * ratio;
             const y = yCss * ratio;
 
-            const { left, right, top, bottom } = chartLayout;
+            const { left, right, top, bottom } = layout;
             if (x < left || x > right || y < top || y > bottom) {
               hideTip();
               return;
             }
 
-            const n = activePortfolioSeries.length;
-            const t = (x - left) / Math.max(1, right - left);
-            const idx = Math.min(n - 1, Math.max(0, Math.round(t * (n - 1))));
-            activeHoverIndex = idx;
+            const n = activeSeries.length;
+            const tt = (x - left) / Math.max(1, right - left);
+            const idx = Math.min(n - 1, Math.max(0, Math.round(tt * (n - 1))));
+            hoverIndex = idx;
 
-            const p = activePortfolioSeries[idx];
+            const p = activeSeries[idx];
             tip.textContent = `${p.d} • ${pctHover.format(p.v)}`;
             tip.style.display = "block";
 
-            // Position tooltip near cursor within chart-wrap
             const wrap = canvas.parentElement;
             const wrapRect = wrap.getBoundingClientRect();
             const tipRect = tip.getBoundingClientRect();
             let leftPx = e.clientX - wrapRect.left + 12;
             let topPx = e.clientY - wrapRect.top + 12;
-            leftPx = Math.min(
-              leftPx,
-              wrapRect.width - tipRect.width - 8
-            );
+            leftPx = Math.min(leftPx, wrapRect.width - tipRect.width - 8);
             topPx = Math.min(topPx, wrapRect.height - tipRect.height - 8);
             leftPx = Math.max(8, leftPx);
             topPx = Math.max(8, topPx);
             tip.style.left = `${leftPx}px`;
             tip.style.top = `${topPx}px`;
 
-            drawPortfolioChart(canvas, activePortfolioSeries, activeHoverIndex);
+            drawPortfolioChart(canvas, activeSeries, hoverIndex);
           });
 
-          // Default hint
           setSearchResult("Type a ticker and click Search.");
-        }
+        };
 
-        renderInvestments();
+        return { init, render };
       }
+
+      const nilsApp = makeInvestmentsApp({
+        sectionId: "nils-investments",
+        prefix: "nils",
+        storageKey: NILS_INVESTMENTS_KEY,
+        seedKey: NILS_INVESTMENTS_SEED_KEY,
+        defaults: defaultNilsInvestments,
+        migrateFromKey: "niklas-hemsida-investments-v1",
+      });
+
+      const niklasApp = makeInvestmentsApp({
+        sectionId: "niklas-investments",
+        prefix: "niklas",
+        storageKey: NIKLAS_INVESTMENTS_KEY,
+        seedKey: NIKLAS_INVESTMENTS_SEED_KEY,
+        defaults: defaultNiklasInvestments,
+      });
 
       function loadTodos() {
         try {
