@@ -580,10 +580,9 @@
         const top = padding;
         const bottom = H - padding;
 
-        // Chart shows portfolio return since start (0% baseline)
-        const base =
-          typeof series[0].v === "number" && series[0].v > 0 ? series[0].v : 1;
-        const values = series.map((p) => (p.v - base) / base); // decimal returns
+        // Chart shows portfolio return vs total invested (ROIC to date).
+        // This stays consistent (in sign) with the IRR when you add more money later.
+        const values = series.map((p) => p.v); // decimal returns
         const minV = Math.min(...values);
         const maxV = Math.max(...values);
         const span = Math.max(1e-6, maxV - minV);
@@ -932,12 +931,18 @@
         }
 
         const lotEvents = lots
-          .map((l) => ({ d: l.date, t: normalizeTicker(l.ticker), sh: Number(l.shares || 0) }))
+          .map((l) => ({
+            d: l.date,
+            t: normalizeTicker(l.ticker),
+            sh: Number(l.shares || 0),
+            invested: Number(l.shares || 0) * Number(l.purchasePrice),
+          }))
           .filter((e) => e.d && e.t)
           .sort((a, b) => a.d.localeCompare(b.d));
 
         const heldByTicker = {};
         let evIdx = 0;
+        let investedSoFar = 0;
 
         const lastCloseByTicker = {};
         const series = [];
@@ -946,6 +951,7 @@
           while (evIdx < lotEvents.length && lotEvents[evIdx].d <= d) {
             const e = lotEvents[evIdx];
             heldByTicker[e.t] = (heldByTicker[e.t] || 0) + e.sh;
+            if (Number.isFinite(e.invested)) investedSoFar += e.invested;
             evIdx++;
           }
           let v = 0;
@@ -956,7 +962,10 @@
             const held = heldByTicker[t] || 0;
             if (held && Number.isFinite(c)) v += held * c;
           }
-          series.push({ d, v: Math.round(v * 100) / 100 });
+          // Return on invested capital to date (matches the sign intuition of IRR)
+          const r =
+            investedSoFar > 0 ? (v - investedSoFar) / investedSoFar : 0;
+          series.push({ d, v: Math.round(r * 10000) / 10000 });
         }
 
         // downsample for chart (weekly), keep key dates
