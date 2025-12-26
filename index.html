@@ -721,10 +721,17 @@
         "#todos",
       ];
       const STORAGE_KEY = "niklas-hemsida-todos-v1";
-      const NILS_INVESTMENTS_KEY = "nils-hemsida-investments-v1";
-      const NILS_INVESTMENTS_SEED_KEY = "nils-hemsida-investments-seed-v2";
-      const NIKLAS_INVESTMENTS_KEY = "niklas-hemsida-investments-v1";
-      const NIKLAS_INVESTMENTS_SEED_KEY = "niklas-hemsida-investments-seed-v1";
+      // Storage keys
+      // - Legacy key (used by the original single "Investments" tab)
+      // - Nils now owns the legacy portfolio
+      // - Niklas gets a separate new portfolio key
+      const LEGACY_INVESTMENTS_KEY = "niklas-hemsida-investments-v1";
+      const NILS_INVESTMENTS_KEY = LEGACY_INVESTMENTS_KEY;
+      const NILS_INVESTMENTS_SEED_KEY = "nils-hemsida-investments-seed-v3";
+      const NILS_SPLIT_KEY = "nils-hemsida-investments-v1"; // created during the split; migrate into legacy
+      const NIKLAS_INVESTMENTS_KEY = "niklas-hemsida-investments-niklas-v1";
+      const NIKLAS_INVESTMENTS_SEED_KEY = "niklas-hemsida-investments-niklas-seed-v1";
+      const NILS_MIGRATION_KEY = "nils-hemsida-migrated-legacy-v1";
       const PRICE_CACHE_KEY = "niklas-hemsida-price-cache-v1";
       const PRICE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
@@ -1311,6 +1318,8 @@
           seedKey,
           defaults,
           migrateFromKey,
+          migrateIntoKey,
+          migrateOnceKey,
         } = opts;
 
         let initialized = false;
@@ -1614,6 +1623,44 @@
           if (initialized) return;
           initialized = true;
 
+          // One-time merge migration (if configured)
+          if (migrateOnceKey && migrateIntoKey && migrateFromKey) {
+            try {
+              const done = localStorage.getItem(migrateOnceKey) === "1";
+              if (!done) {
+                const readArr = (k) => {
+                  const raw = localStorage.getItem(k);
+                  const parsed = raw ? JSON.parse(raw) : null;
+                  return Array.isArray(parsed) ? parsed : null;
+                };
+                const from = readArr(migrateFromKey) || [];
+                const into = readArr(migrateIntoKey) || [];
+
+                const fp = (l) =>
+                  [
+                    normalizeTicker(l.ticker),
+                    l.date || "",
+                    String(l.shares ?? ""),
+                    l.purchasePrice == null ? "" : String(l.purchasePrice),
+                  ].join("|");
+
+                const seen = new Set(into.map(fp));
+                for (const lot of from) {
+                  const key = fp(lot);
+                  if (!seen.has(key)) {
+                    into.push(lot);
+                    seen.add(key);
+                  }
+                }
+
+                localStorage.setItem(migrateIntoKey, JSON.stringify(into));
+                localStorage.setItem(migrateOnceKey, "1");
+              }
+            } catch {
+              // ignore
+            }
+          }
+
           // Optional one-time seeding
           try {
             const seeded = localStorage.getItem(seedKey) === "1";
@@ -1784,7 +1831,10 @@
         storageKey: NILS_INVESTMENTS_KEY,
         seedKey: NILS_INVESTMENTS_SEED_KEY,
         defaults: defaultNilsInvestments,
-        migrateFromKey: "niklas-hemsida-investments-v1",
+        // Merge anything previously saved under the split key back into the legacy portfolio.
+        migrateFromKey: NILS_SPLIT_KEY,
+        migrateIntoKey: NILS_INVESTMENTS_KEY,
+        migrateOnceKey: NILS_MIGRATION_KEY,
       });
 
       const niklasApp = makeInvestmentsApp({
