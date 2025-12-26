@@ -377,6 +377,31 @@
 
         <form id="inv-add-form" class="card" style="margin-top: 12px">
           <div class="row">
+            <div class="field" style="min-width: 260px; flex: 2">
+              <label for="inv-search">Search ticker</label>
+              <input
+                id="inv-search"
+                class="input"
+                type="text"
+                placeholder="Type ticker and press Search (e.g. dher.de)"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field" style="min-width: 160px; flex: 0">
+              <label>&nbsp;</label>
+              <button class="btn" type="button" id="inv-search-btn">
+                Search
+              </button>
+            </div>
+            <div class="field" style="min-width: 240px; flex: 3">
+              <label>Result</label>
+              <div id="inv-search-result" class="muted" style="padding: 10px 0">
+                —
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
             <div class="field">
               <label for="inv-ticker">Ticker</label>
               <input
@@ -424,7 +449,7 @@
               Refresh prices
             </button>
             <p class="muted" style="margin: 0">
-              Tip: prices are fetched via Stooq using a public CORS proxy.
+              Tip: search validates by fetching Stooq prices via a public CORS proxy.
             </p>
           </div>
         </form>
@@ -1188,6 +1213,42 @@
           investmentsInitialized = true;
 
           // Hook up add form + refresh button
+          const setSearchResult = (text, isError = false) => {
+            const el = byId("inv-search-result");
+            el.textContent = text;
+            el.style.color = isError ? "tomato" : "";
+          };
+
+          const runTickerSearch = async () => {
+            const q = normalizeTicker(byId("inv-search").value);
+            if (!q) return;
+            setSearchResult("Searching…");
+            try {
+              const data = await getDailyCloses(q, { force: true });
+              // Prefill ticker field and help user continue with date+shares
+              byId("inv-ticker").value = q;
+              if (!byId("inv-name").value.trim()) {
+                byId("inv-name").value = "";
+              }
+              setSearchResult(
+                `Found ${q} • latest close ${data.latestClose.toFixed(
+                  2
+                )} (as of ${data.latestDate})`
+              );
+              byId("inv-date").focus();
+            } catch (e) {
+              setSearchResult(`Not found / could not fetch prices for: ${q}`, true);
+            }
+          };
+
+          byId("inv-search-btn").addEventListener("click", runTickerSearch);
+          byId("inv-search").addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              runTickerSearch();
+            }
+          });
+
           byId("inv-add-form").addEventListener("submit", async (e) => {
             e.preventDefault();
             const ticker = normalizeTicker(byId("inv-ticker").value);
@@ -1219,6 +1280,9 @@
           byId("inv-refresh").addEventListener("click", () =>
             renderInvestments({ forcePrices: true })
           );
+
+          // Default hint
+          setSearchResult("Type a ticker and click Search.");
         }
 
         renderInvestments();
