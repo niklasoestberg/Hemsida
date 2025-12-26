@@ -785,6 +785,9 @@
         history.replaceState(null, "", "#nils-investments");
       }
 
+      // Used by drawPortfolioChart() and hover logic
+      let chartLayout = null;
+
       function resizeCanvasToContainer(canvas) {
         const ratio = window.devicePixelRatio || 1;
         const rect = canvas.getBoundingClientRect();
