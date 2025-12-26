@@ -421,16 +421,18 @@
                 <th>Ticker</th>
                 <th>Date</th>
                 <th class="num">Shares</th>
-                <th class="num">Purchase price (EUR)</th>
-                <th class="num">Current price (EUR)</th>
-                <th class="num">Invested (EUR)</th>
-                <th class="num">Current value (EUR)</th>
+                <th class="num">Purchase<br />price (EUR)</th>
+                <th class="num">Current<br />price (EUR)</th>
+                <th class="num">Invested<br />(EUR)</th>
+                <th class="num">Current<br />value (EUR)</th>
+                <th class="num">Return<br />(to date)</th>
+                <th class="num">IRR<br />(annual)</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td colspan="9" class="muted">Open Investments to load…</td>
+                <td colspan="11" class="muted">Open Investments to load…</td>
               </tr>
             </tbody>
           </table>
@@ -1154,7 +1156,7 @@
           saveInvestments(lots);
 
           const tbody = document.querySelector("#investments tbody");
-          tbody.innerHTML = `<tr><td colspan=\"9\" class=\"muted\">Loading…</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan=\"11\" class=\"muted\">Loading…</td></tr>`;
 
           const portfolio = await buildPortfolio(lots, { forcePrices });
 
@@ -1188,6 +1190,21 @@
               lot.purchasePrice == null ? NaN : Number(lot.purchasePrice);
             const invested = Number.isFinite(pp) ? sh * pp : NaN;
             const curVal = Number.isFinite(current) ? sh * current : NaN;
+            const rowReturn =
+              Number.isFinite(invested) && invested > 0 && Number.isFinite(curVal)
+                ? (curVal - invested) / invested
+                : NaN;
+            const rowIrr =
+              portfolio.asOf &&
+              Number.isFinite(invested) &&
+              invested > 0 &&
+              Number.isFinite(curVal) &&
+              curVal > 0
+                ? xirr([
+                    { date: lot.date, amount: -invested },
+                    { date: portfolio.asOf, amount: curVal },
+                  ])
+                : NaN;
 
             const tr = document.createElement("tr");
             tr.dataset.id = lot.id;
@@ -1220,6 +1237,8 @@
               { text: Number.isFinite(current) ? current.toFixed(2) : "—", cls: "num" },
               { text: Number.isFinite(invested) ? eur.format(invested) : "—", cls: "num" },
               { text: Number.isFinite(curVal) ? eur.format(curVal) : "—", cls: "num" },
+              { text: Number.isFinite(rowReturn) ? fmtPct(rowReturn) : "—", cls: "num" },
+              { text: Number.isFinite(rowIrr) ? fmtPct(rowIrr) : "—", cls: "num" },
             ];
 
             for (const c of cells) {
@@ -1244,7 +1263,7 @@
           });
         } catch (e) {
           const tbody = document.querySelector("#investments tbody");
-          tbody.innerHTML = `<tr><td colspan=\"9\" class=\"muted\">Could not load prices. Try “Refresh prices”.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan=\"11\" class=\"muted\">Could not load prices. Try “Refresh prices”.</td></tr>`;
           byId("inv-irr").textContent = "—";
         } finally {
           investmentsBusy = false;
@@ -1304,6 +1323,14 @@
         tdCurVal.className = "num";
         tdCurVal.textContent = "—";
 
+        const tdReturn = document.createElement("td");
+        tdReturn.className = "num";
+        tdReturn.textContent = "—";
+
+        const tdRowIrr = document.createElement("td");
+        tdRowIrr.className = "num";
+        tdRowIrr.textContent = "—";
+
         const tdActions = document.createElement("td");
         const saveBtn = document.createElement("button");
         saveBtn.type = "button";
@@ -1349,6 +1376,8 @@
           tdCurPrice,
           tdInvested,
           tdCurVal,
+          tdReturn,
+          tdRowIrr,
           tdActions,
         ];
         for (const td of cells) tr.appendChild(td);
