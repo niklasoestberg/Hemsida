@@ -491,6 +491,15 @@
             <button class="btn secondary" type="button" id="inv-refresh">
               Refresh prices
             </button>
+            <button class="btn secondary" type="button" id="inv-export">
+              Export
+            </button>
+            <button class="btn secondary" type="button" id="inv-import">
+              Import
+            </button>
+            <button class="btn secondary" type="button" id="inv-restore">
+              Restore defaults
+            </button>
             <p class="muted" style="margin: 0">
               Tip: search validates by fetching Stooq prices via a public CORS proxy.
             </p>
@@ -707,16 +716,7 @@
           .replace(/\s+/g, "");
       }
 
-      function loadInvestments() {
-        try {
-          const raw = localStorage.getItem(INVESTMENTS_KEY);
-          const parsed = raw ? JSON.parse(raw) : null;
-          if (Array.isArray(parsed)) return parsed;
-        } catch {
-          // ignore
-        }
-
-        // Defaults (seed): your known lots
+      function defaultInvestments() {
         return [
           {
             id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
@@ -751,6 +751,19 @@
             purchasePrice: null,
           },
         ];
+      }
+
+      function loadInvestments() {
+        try {
+          const raw = localStorage.getItem(INVESTMENTS_KEY);
+          const parsed = raw ? JSON.parse(raw) : null;
+          if (Array.isArray(parsed)) return parsed;
+        } catch {
+          // ignore
+        }
+
+        // Defaults (seed): your known lots
+        return defaultInvestments();
       }
 
       function saveInvestments(lots) {
@@ -938,7 +951,7 @@
         let changed = false;
         for (const lot of lots) {
           const t = normalizeTicker(lot.ticker);
-          if (!t || !dataByTicker[t] || lot.purchasePrice) continue;
+          if (!t || !dataByTicker[t] || lot.purchasePrice != null) continue;
           const found = closeOnOrNext(dataByTicker[t].series, lot.date);
           if (found) {
             lot.purchasePrice = found.close;
@@ -948,6 +961,7 @@
         if (changed) saveInvestments(lots);
 
         const totalInvested = lots.reduce((sum, lot) => {
+          if (lot.purchasePrice == null) return sum;
           const p = Number(lot.purchasePrice);
           const sh = Number(lot.shares);
           if (!Number.isFinite(p) || !Number.isFinite(sh)) return sum;
@@ -973,6 +987,7 @@
         const cashflows = [];
         for (const lot of lots) {
           if (!lot.date) continue;
+          if (lot.purchasePrice == null) continue;
           const p = Number(lot.purchasePrice);
           const sh = Number(lot.shares);
           if (!Number.isFinite(p) || !Number.isFinite(sh)) continue;
@@ -1008,7 +1023,10 @@
             d: l.date,
             t: normalizeTicker(l.ticker),
             sh: Number(l.shares || 0),
-            invested: Number(l.shares || 0) * Number(l.purchasePrice),
+            invested:
+              l.purchasePrice == null
+                ? NaN
+                : Number(l.shares || 0) * Number(l.purchasePrice),
           }))
           .filter((e) => e.d && e.t)
           .sort((a, b) => a.d.localeCompare(b.d));
@@ -1099,7 +1117,8 @@
             const t = normalizeTicker(lot.ticker);
             const current = portfolio.currentCloseByTicker[t];
             const sh = Number(lot.shares || 0);
-            const pp = Number(lot.purchasePrice);
+            const pp =
+              lot.purchasePrice == null ? NaN : Number(lot.purchasePrice);
             const invested = Number.isFinite(pp) ? sh * pp : NaN;
             const curVal = Number.isFinite(current) ? sh * current : NaN;
 
@@ -1374,6 +1393,37 @@
           byId("inv-refresh").addEventListener("click", () =>
             renderInvestments({ forcePrices: true })
           );
+
+          byId("inv-export").addEventListener("click", async () => {
+            const data = JSON.stringify(loadInvestments(), null, 2);
+            try {
+              await navigator.clipboard.writeText(data);
+              setSearchResult("Exported to clipboard.");
+            } catch {
+              prompt("Copy your portfolio JSON:", data);
+            }
+          });
+
+          byId("inv-import").addEventListener("click", async () => {
+            const raw = prompt("Paste your portfolio JSON:");
+            if (!raw) return;
+            try {
+              const parsed = JSON.parse(raw);
+              if (!Array.isArray(parsed)) throw new Error("Not an array");
+              saveInvestments(parsed);
+              setSearchResult("Imported portfolio.");
+              await renderInvestments({ forcePrices: true });
+            } catch {
+              setSearchResult("Import failed (invalid JSON).", true);
+            }
+          });
+
+          byId("inv-restore").addEventListener("click", async () => {
+            saveInvestments(defaultInvestments());
+            localStorage.setItem(INVESTMENTS_SEED_KEY, "1");
+            setSearchResult("Restored default portfolio.");
+            await renderInvestments({ forcePrices: true });
+          });
 
           // Default hint
           setSearchResult("Type a ticker and click Search.");
