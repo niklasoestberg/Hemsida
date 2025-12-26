@@ -733,6 +733,7 @@
       const NIKLAS_INVESTMENTS_SEED_KEY = "niklas-hemsida-investments-niklas-seed-v1";
       const NILS_MIGRATION_KEY = "nils-hemsida-migrated-legacy-v1";
       const NILS_ENSURE_LOTS_KEY = "nils-hemsida-ensure-lots-v1";
+      const NIKLAS_ENSURE_LOTS_KEY = "niklas-hemsida-ensure-lots-v1";
       const PRICE_CACHE_KEY = "niklas-hemsida-price-cache-v1";
       const PRICE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
@@ -1910,6 +1911,18 @@
         storageKey: NIKLAS_INVESTMENTS_KEY,
         seedKey: NIKLAS_INVESTMENTS_SEED_KEY,
         defaults: defaultNiklasInvestments,
+        ensureOnceKey: NIKLAS_ENSURE_LOTS_KEY,
+        ensureLots: [
+          {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+            ticker: "dher.de",
+            name: "Delivery Hero",
+            // Delivery Hero IPO: 2017-06-30 (Frankfurt)
+            date: "2017-06-30",
+            shares: 1,
+            purchasePrice: null,
+          },
+        ],
       });
 
       function loadTodos() {
