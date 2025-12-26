@@ -131,6 +131,30 @@
         margin: 0;
       }
 
+      .table-wrap {
+        margin-top: 12px;
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid color-mix(in oklab, var(--muted) 18%, transparent);
+        vertical-align: top;
+      }
+
+      th {
+        font-weight: 700;
+        color: color-mix(in oklab, var(--muted) 85%, var(--text));
+        font-size: 0.9rem;
+      }
+
       .todo-form {
         display: flex;
         gap: 10px;
@@ -239,7 +263,31 @@
     <main class="panel">
       <section id="investments" class="card" hidden>
         <h2>Investments</h2>
-        <p class="muted">Add content here when you want.</p>
+        <p class="muted">Holdings and purchase history.</p>
+
+        <div class="table-wrap" role="region" aria-label="Investments table">
+          <table>
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>Date</th>
+                <th>Shares</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Delivery Hero</td>
+                <td>2023-04-11</td>
+                <td>100</td>
+              </tr>
+              <tr>
+                <td>Delivery Hero</td>
+                <td>2024-06-24</td>
+                <td>100</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section id="schedule" class="card" hidden>
