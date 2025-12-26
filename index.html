@@ -1681,7 +1681,8 @@
             // ignore
           }
 
-          // Ensure lots exist (runs every time; deduped by ticker+date+shares)
+          // Ensure lots exist (runs every time; deduped by ticker+date+shares).
+          // If a matching lot already exists but is missing purchasePrice, we can fill it.
           if (Array.isArray(ensureLots) && ensureLots.length) {
             try {
               const lots = loadLots();
@@ -1689,14 +1690,28 @@
                 [normalizeTicker(l.ticker), l.date || "", String(l.shares ?? "")].join(
                   "|"
                 );
-              const seen = new Set(lots.map(fp));
+              const idxByKey = new Map();
+              for (let i = 0; i < lots.length; i++) {
+                idxByKey.set(fp(lots[i]), i);
+              }
               let changed = false;
               for (const lot of ensureLots) {
                 const key = fp(lot);
-                if (!seen.has(key)) {
+                const idx = idxByKey.get(key);
+                if (idx == null) {
                   lots.push(lot);
-                  seen.add(key);
+                  idxByKey.set(key, lots.length - 1);
                   changed = true;
+                } else {
+                  // Fill missing purchasePrice if provided by ensureLots
+                  if (
+                    lot.purchasePrice != null &&
+                    (lots[idx].purchasePrice == null ||
+                      lots[idx].purchasePrice === "")
+                  ) {
+                    lots[idx].purchasePrice = lot.purchasePrice;
+                    changed = true;
+                  }
                 }
               }
               if (changed) saveLots(lots);
@@ -1917,7 +1932,8 @@
             // Delivery Hero IPO: 2017-06-30 (Frankfurt)
             date: "2017-06-30",
             shares: 1,
-            purchasePrice: null,
+            // IPO price you provided (not the close)
+            purchasePrice: 25.5,
           },
         ],
       });
