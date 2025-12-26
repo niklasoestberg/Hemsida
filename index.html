@@ -376,6 +376,48 @@
         </p>
         <p class="muted" id="inv-warn" style="display: none; margin-top: 8px"></p>
 
+        <div class="stats" aria-label="Investment summary">
+          <div class="stat">
+            <div class="label">Total invested</div>
+            <div class="value" id="inv-total-invested">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">Current total value</div>
+            <div class="value" id="inv-current-value">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">IRR (annualized)</div>
+            <div class="value" id="inv-irr">—</div>
+          </div>
+        </div>
+
+        <div class="chart-wrap" role="region" aria-label="Portfolio value chart">
+          <canvas id="portfolio-chart"></canvas>
+        </div>
+
+        <div class="table-wrap" role="region" aria-label="Investments table">
+          <table>
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>Ticker</th>
+                <th>Date</th>
+                <th class="num">Shares</th>
+                <th class="num">Purchase price (EUR)</th>
+                <th class="num">Current price (EUR)</th>
+                <th class="num">Invested (EUR)</th>
+                <th class="num">Current value (EUR)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="9" class="muted">Open Investments to load…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <form id="inv-add-form" class="card" style="margin-top: 12px">
           <div class="row">
             <div class="field" style="min-width: 260px; flex: 2">
@@ -454,48 +496,6 @@
             </p>
           </div>
         </form>
-
-        <div class="stats" aria-label="Investment summary">
-          <div class="stat">
-            <div class="label">Total invested</div>
-            <div class="value" id="inv-total-invested">—</div>
-          </div>
-          <div class="stat">
-            <div class="label">Current total value</div>
-            <div class="value" id="inv-current-value">—</div>
-          </div>
-          <div class="stat">
-            <div class="label">IRR (annualized)</div>
-            <div class="value" id="inv-irr">—</div>
-          </div>
-        </div>
-
-        <div class="chart-wrap" role="region" aria-label="Portfolio value chart">
-          <canvas id="portfolio-chart"></canvas>
-        </div>
-
-        <div class="table-wrap" role="region" aria-label="Investments table">
-          <table>
-            <thead>
-              <tr>
-                <th>Asset</th>
-                <th>Ticker</th>
-                <th>Date</th>
-                <th class="num">Shares</th>
-                <th class="num">Purchase price (EUR)</th>
-                <th class="num">Current price (EUR)</th>
-                <th class="num">Invested (EUR)</th>
-                <th class="num">Current value (EUR)</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colspan="9" class="muted">Open Investments to load…</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </section>
 
       <section id="schedule" class="card" hidden>
@@ -529,6 +529,7 @@
       const TAB_IDS = ["#investments", "#schedule", "#todos"];
       const STORAGE_KEY = "niklas-hemsida-todos-v1";
       const INVESTMENTS_KEY = "niklas-hemsida-investments-v1";
+      const INVESTMENTS_SEED_KEY = "niklas-hemsida-investments-seed-v2";
       const PRICE_CACHE_KEY = "niklas-hemsida-price-cache-v1";
       const PRICE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
@@ -640,6 +641,21 @@
         }
         ctx.restore();
 
+        // 0% baseline
+        if (minV <= 0 && maxV >= 0) {
+          const y0 = bottom - ((bottom - top) * (0 - minV)) / span;
+          ctx.save();
+          ctx.strokeStyle = muted;
+          ctx.globalAlpha = 0.75;
+          ctx.setLineDash([6, 6]);
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(left, y0);
+          ctx.lineTo(right, y0);
+          ctx.stroke();
+          ctx.restore();
+        }
+
         // line
         ctx.strokeStyle = accent;
         ctx.lineWidth = 2;
@@ -700,7 +716,7 @@
           // ignore
         }
 
-        // Defaults: your Delivery Hero lots (prices are daily closes)
+        // Defaults (seed): your known lots
         return [
           {
             id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
@@ -717,6 +733,22 @@
             date: "2024-06-24",
             shares: 100,
             purchasePrice: 25.92,
+          },
+          {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + 2),
+            ticker: "tsla.us",
+            name: "Tesla",
+            date: "2024-10-15",
+            shares: 1,
+            purchasePrice: null,
+          },
+          {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + 3),
+            ticker: "nvda.us",
+            name: "Nvidia",
+            date: "2025-02-12",
+            shares: 1,
+            purchasePrice: null,
           },
         ];
       }
@@ -1237,6 +1269,42 @@
       function initInvestments() {
         if (!investmentsInitialized) {
           investmentsInitialized = true;
+
+          // Seed requested lots once (won't overwrite your existing portfolio)
+          try {
+            const seeded = localStorage.getItem(INVESTMENTS_SEED_KEY) === "1";
+            if (!seeded) {
+              const lots = loadInvestments();
+              const hasTicker = (t) =>
+                lots.some((l) => normalizeTicker(l.ticker) === normalizeTicker(t));
+
+              if (!hasTicker("tsla.us")) {
+                lots.push({
+                  id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+                  ticker: "tsla.us",
+                  name: "Tesla",
+                  date: "2024-10-15",
+                  shares: 1,
+                  purchasePrice: null,
+                });
+              }
+              if (!hasTicker("nvda.us")) {
+                lots.push({
+                  id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + 1),
+                  ticker: "nvda.us",
+                  name: "Nvidia",
+                  date: "2025-02-12",
+                  shares: 1,
+                  purchasePrice: null,
+                });
+              }
+
+              saveInvestments(lots);
+              localStorage.setItem(INVESTMENTS_SEED_KEY, "1");
+            }
+          } catch {
+            // ignore
+          }
 
           // Hook up add form + refresh button
           const setSearchResult = (text, isError = false) => {
