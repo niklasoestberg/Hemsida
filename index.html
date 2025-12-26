@@ -202,7 +202,7 @@
       canvas {
         display: block;
         width: 100%;
-        height: 280px;
+        height: 320px;
       }
 
       .tooltip {
@@ -816,13 +816,6 @@
           return;
         }
 
-        // Extra left padding for y-axis labels
-        const padding = 28;
-        const left = padding + 26;
-        const right = W - padding;
-        const top = padding;
-        const bottom = H - padding;
-
         // Chart shows portfolio return vs total invested (ROIC to date).
         // This stays consistent (in sign) with the IRR when you add more money later.
         const values = series.map((p) => p.v); // decimal returns
@@ -832,6 +825,29 @@
 
         const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#7aa2ff";
         const muted = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim() || "#aab6d6";
+
+        // Sizing (reserve space so labels don't get clipped)
+        const padding = 20;
+        const fontPx = Math.max(10, Math.floor(W / 95));
+        const xLabelSpace = fontPx + 12; // reserved space below plot for dates
+
+        // y-axis label formatter
+        const pct = new Intl.NumberFormat(undefined, {
+          style: "percent",
+          maximumFractionDigits: 0,
+        });
+
+        // Measure widest y label to compute left padding dynamically
+        ctx.font = `${fontPx}px ui-sans-serif, system-ui`;
+        const yLabelCandidates = [pct.format(minV), pct.format(maxV)];
+        if (minV <= 0 && maxV >= 0) yLabelCandidates.push("0%");
+        const yLabelWidth =
+          Math.max(...yLabelCandidates.map((t) => ctx.measureText(t).width)) + 14;
+
+        const left = padding + yLabelWidth;
+        const right = W - padding;
+        const top = padding;
+        const bottom = H - padding - xLabelSpace;
 
         chartLayout = { left, right, top, bottom, minV, maxV, span };
 
@@ -913,24 +929,23 @@
         }
 
         // labels (y-axis %)
-        const pct = new Intl.NumberFormat(undefined, {
-          style: "percent",
-          maximumFractionDigits: 0,
-        });
         ctx.fillStyle = muted;
-        ctx.font = `${Math.max(10, Math.floor(W / 90))}px ui-sans-serif, system-ui`;
+        ctx.font = `${fontPx}px ui-sans-serif, system-ui`;
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
 
         const yFor = (v) => bottom - ((bottom - top) * (v - minV)) / span;
+        const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
         const labelX = left - 8;
+        const yMin = top + fontPx / 2;
+        const yMax = bottom - fontPx / 2;
 
         // Show max/min, plus 0% if it fits in range
-        ctx.fillText(pct.format(maxV), labelX, yFor(maxV));
+        ctx.fillText(pct.format(maxV), labelX, clamp(yFor(maxV), yMin, yMax));
         if (minV <= 0 && maxV >= 0) {
-          ctx.fillText("0%", labelX, yFor(0));
+          ctx.fillText("0%", labelX, clamp(yFor(0), yMin, yMax));
         }
-        ctx.fillText(pct.format(minV), labelX, yFor(minV));
+        ctx.fillText(pct.format(minV), labelX, clamp(yFor(minV), yMin, yMax));
 
         // x-axis date labels (start + 6 more + end = 9 ticks)
         const ticks = 9;
@@ -943,7 +958,7 @@
         ctx.textBaseline = "top";
         ctx.fillStyle = muted;
 
-        const yLabel = bottom + 6;
+        const yLabel = bottom + 8;
         const minGap = 52; // px between labels
         let lastX = -Infinity;
         for (let i = 0; i < tickIdx.length; i++) {
