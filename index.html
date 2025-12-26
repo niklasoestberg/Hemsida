@@ -60,18 +60,10 @@
       .topbar-inner {
         max-width: 900px;
         margin: 0 auto;
-        padding: 12px 20px;
+        padding: 14px 20px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-      }
-
-      .brand {
-        font-weight: 700;
-        letter-spacing: -0.01em;
-        color: var(--text);
-        white-space: nowrap;
+        justify-content: center;
       }
 
       nav ul {
@@ -79,9 +71,9 @@
         margin: 0;
         padding: 0;
         display: flex;
-        gap: 12px;
+        gap: 10px;
         flex-wrap: wrap;
-        justify-content: flex-end;
+        justify-content: center;
       }
 
       nav a {
@@ -103,62 +95,7 @@
 
       html {
         scroll-behavior: smooth;
-        scroll-padding-top: 76px;
-      }
-
-      header {
-        display: grid;
-        gap: 10px;
-        margin-bottom: 22px;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: clamp(2rem, 3vw + 1rem, 3rem);
-        letter-spacing: -0.02em;
-      }
-
-      p {
-        margin: 0;
-        color: var(--muted);
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 14px;
-        margin-top: 22px;
-      }
-
-      .card {
-        border: 1px solid color-mix(in oklab, var(--muted) 20%, transparent);
-        background: color-mix(in oklab, var(--card) 92%, transparent);
-        border-radius: 14px;
-        padding: 16px;
-      }
-
-      .card h2 {
-        margin: 0 0 8px;
-        font-size: 1.1rem;
-      }
-
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
-        color: color-mix(in oklab, var(--accent) 85%, var(--text));
-        background: color-mix(in oklab, var(--accent) 12%, transparent);
-        font-size: 0.9rem;
-        width: fit-content;
-      }
-
-      footer {
-        margin-top: 26px;
-        color: var(--muted);
-        font-size: 0.9rem;
+        scroll-padding-top: 72px;
       }
 
       a {
@@ -174,8 +111,7 @@
   <body>
     <div class="topbar" role="banner">
       <div class="topbar-inner">
-        <div class="brand">Niklas Hemsida</div>
-        <nav aria-label="Top menu">
+        <nav aria-label="Menu">
           <ul>
             <li><a href="#investments">Investments</a></li>
             <li><a href="#schedule">Schedule</a></li>
@@ -184,34 +120,5 @@
         </nav>
       </div>
     </div>
-    <main>
-      <header>
-        <div class="pill">Niklas Hemsida</div>
-        <h1>Niklas Hemsida</h1>
-        <p>A simple homepage for investments, schedule, and todos.</p>
-      </header>
-
-      <section class="grid" aria-label="Homepage sections">
-        <article class="card">
-          <h2 id="investments">Investments</h2>
-          <p>Track holdings, ideas, and links to resources.</p>
-        </article>
-        <article class="card">
-          <h2 id="schedule">Schedule</h2>
-          <p>Upcoming plans, reminders, and routines.</p>
-        </article>
-        <article class="card">
-          <h2 id="todos">Todos</h2>
-          <p>Things to do next (work, personal, projects).</p>
-        </article>
-      </section>
-
-      <footer>
-        <p>
-          Tip: open this file directly, or serve the folder with a static server
-          (e.g. <code>python -m http.server</code>).
-        </p>
-      </footer>
-    </main>
   </body>
 </html>
