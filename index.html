@@ -196,12 +196,29 @@
         background: color-mix(in oklab, var(--card) 70%, transparent);
         border-radius: 14px;
         padding: 12px;
+        position: relative;
       }
 
       canvas {
         display: block;
         width: 100%;
         height: 280px;
+      }
+
+      .tooltip {
+        position: absolute;
+        display: none;
+        pointer-events: none;
+        padding: 8px 10px;
+        border-radius: 12px;
+        border: 1px solid color-mix(in oklab, var(--muted) 25%, transparent);
+        background: color-mix(in oklab, var(--bg) 85%, transparent);
+        color: var(--text);
+        font-size: 0.9rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(10px);
+        max-width: 260px;
+        z-index: 20;
       }
 
       .todo-form {
@@ -393,6 +410,7 @@
 
         <div class="chart-wrap" role="region" aria-label="Portfolio value chart">
           <canvas id="portfolio-chart"></canvas>
+          <div id="portfolio-tooltip" class="tooltip"></div>
         </div>
 
         <div class="table-wrap" role="region" aria-label="Investments table">
@@ -585,6 +603,9 @@
       let investmentsInitialized = false;
       let portfolioChartRaf = 0;
       let investmentsBusy = false;
+      let activePortfolioSeries = null;
+      let activeHoverIndex = null;
+      let chartLayout = null;
 
       function resizeCanvasToContainer(canvas) {
         const ratio = window.devicePixelRatio || 1;
@@ -598,7 +619,7 @@
         return ratio;
       }
 
-      function drawPortfolioChart(canvas, series) {
+      function drawPortfolioChart(canvas, series, hoverIndex = null) {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
@@ -628,6 +649,8 @@
 
         const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#7aa2ff";
         const muted = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim() || "#aab6d6";
+
+        chartLayout = { left, right, top, bottom, minV, maxV, span };
 
         // axes
         ctx.save();
@@ -679,6 +702,33 @@
         }
         ctx.stroke();
 
+        // hover highlight (vertical + point)
+        if (
+          typeof hoverIndex === "number" &&
+          hoverIndex >= 0 &&
+          hoverIndex < values.length
+        ) {
+          const x = left + ((right - left) * hoverIndex) / (values.length - 1);
+          const y = bottom - ((bottom - top) * (values[hoverIndex] - minV)) / span;
+
+          ctx.save();
+          ctx.strokeStyle = muted;
+          ctx.globalAlpha = 0.35;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x, top);
+          ctx.lineTo(x, bottom);
+          ctx.stroke();
+          ctx.restore();
+
+          ctx.save();
+          ctx.fillStyle = accent;
+          ctx.beginPath();
+          ctx.arc(x, y, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
         // labels (y-axis %)
         const pct = new Intl.NumberFormat(undefined, {
           style: "percent",
@@ -699,22 +749,31 @@
         }
         ctx.fillText(pct.format(minV), labelX, yFor(minV));
 
-        // x-axis date labels (start / mid / end)
-        const startDate = series[0].d;
-        const midDate = series[Math.floor(series.length / 2)].d;
-        const endDate = series[series.length - 1].d;
+        // x-axis date labels (start + 6 more + end = 9 ticks)
+        const ticks = 9;
+        const tickIdx = [];
+        for (let i = 0; i < ticks; i++) {
+          const idx = Math.round((i * (series.length - 1)) / (ticks - 1));
+          if (tickIdx[tickIdx.length - 1] !== idx) tickIdx.push(idx);
+        }
 
         ctx.textBaseline = "top";
         ctx.fillStyle = muted;
 
-        ctx.textAlign = "left";
-        ctx.fillText(startDate, left, bottom + 6);
+        const yLabel = bottom + 6;
+        const minGap = 52; // px between labels
+        let lastX = -Infinity;
+        for (let i = 0; i < tickIdx.length; i++) {
+          const idx = tickIdx[i];
+          const x = left + ((right - left) * idx) / (series.length - 1);
+          if (x - lastX < minGap && i !== tickIdx.length - 1) continue;
+          lastX = x;
 
-        ctx.textAlign = "center";
-        ctx.fillText(midDate, (left + right) / 2, bottom + 6);
-
-        ctx.textAlign = "right";
-        ctx.fillText(endDate, right, bottom + 6);
+          if (i === 0) ctx.textAlign = "left";
+          else if (i === tickIdx.length - 1) ctx.textAlign = "right";
+          else ctx.textAlign = "center";
+          ctx.fillText(series[idx].d, x, yLabel);
+        }
       }
 
       function normalizeTicker(raw) {
@@ -1175,7 +1234,9 @@
 
           // chart
           const canvas = byId("portfolio-chart");
-          const redraw = () => drawPortfolioChart(canvas, portfolio.series);
+          activePortfolioSeries = portfolio.series;
+          const redraw = () =>
+            drawPortfolioChart(canvas, activePortfolioSeries, activeHoverIndex);
           redraw();
           window.addEventListener("resize", () => {
             cancelAnimationFrame(portfolioChartRaf);
@@ -1431,6 +1492,68 @@
             localStorage.setItem(INVESTMENTS_SEED_KEY, "1");
             setSearchResult("Restored default portfolio.");
             await renderInvestments({ forcePrices: true });
+          });
+
+          // Hover tooltip for chart
+          const canvas = byId("portfolio-chart");
+          const tip = byId("portfolio-tooltip");
+          const pctHover = new Intl.NumberFormat(undefined, {
+            style: "percent",
+            maximumFractionDigits: 1,
+          });
+
+          const hideTip = () => {
+            activeHoverIndex = null;
+            tip.style.display = "none";
+            if (activePortfolioSeries) {
+              drawPortfolioChart(canvas, activePortfolioSeries, null);
+            }
+          };
+
+          canvas.addEventListener("mouseleave", hideTip);
+          canvas.addEventListener("mousemove", (e) => {
+            if (!activePortfolioSeries || !chartLayout) return;
+            const rect = canvas.getBoundingClientRect();
+            const xCss = e.clientX - rect.left;
+            const yCss = e.clientY - rect.top;
+
+            // Convert CSS pixels -> canvas pixels for layout comparisons
+            const ratio = canvas.width / Math.max(1, rect.width);
+            const x = xCss * ratio;
+            const y = yCss * ratio;
+
+            const { left, right, top, bottom } = chartLayout;
+            if (x < left || x > right || y < top || y > bottom) {
+              hideTip();
+              return;
+            }
+
+            const n = activePortfolioSeries.length;
+            const t = (x - left) / Math.max(1, right - left);
+            const idx = Math.min(n - 1, Math.max(0, Math.round(t * (n - 1))));
+            activeHoverIndex = idx;
+
+            const p = activePortfolioSeries[idx];
+            tip.textContent = `${p.d} • ${pctHover.format(p.v)}`;
+            tip.style.display = "block";
+
+            // Position tooltip near cursor within chart-wrap
+            const wrap = canvas.parentElement;
+            const wrapRect = wrap.getBoundingClientRect();
+            const tipRect = tip.getBoundingClientRect();
+            let leftPx = e.clientX - wrapRect.left + 12;
+            let topPx = e.clientY - wrapRect.top + 12;
+            leftPx = Math.min(
+              leftPx,
+              wrapRect.width - tipRect.width - 8
+            );
+            topPx = Math.min(topPx, wrapRect.height - tipRect.height - 8);
+            leftPx = Math.max(8, leftPx);
+            topPx = Math.max(8, topPx);
+            tip.style.left = `${leftPx}px`;
+            tip.style.top = `${topPx}px`;
+
+            drawPortfolioChart(canvas, activePortfolioSeries, activeHoverIndex);
           });
 
           // Default hint
