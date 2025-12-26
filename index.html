@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Niklas random stuff</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0b1220;
+        --card: #111a2e;
+        --text: #e9eefc;
+        --muted: #aab6d6;
+        --accent: #7aa2ff;
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f7fb;
+          --card: #ffffff;
+          --text: #0f172a;
+          --muted: #475569;
+          --accent: #2f5dff;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        line-height: 1.5;
+        background: radial-gradient(
+            1200px 600px at 20% 10%,
+            color-mix(in oklab, var(--accent) 25%, transparent),
+            transparent 60%
+          ),
+          var(--bg);
+        color: var(--text);
+      }
+
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 48px 20px;
+      }
+
+      header {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 22px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 3vw + 1rem, 3rem);
+        letter-spacing: -0.02em;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 14px;
+        margin-top: 22px;
+      }
+
+      .card {
+        border: 1px solid color-mix(in oklab, var(--muted) 20%, transparent);
+        background: color-mix(in oklab, var(--card) 92%, transparent);
+        border-radius: 14px;
+        padding: 16px;
+      }
+
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 1.1rem;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+        color: color-mix(in oklab, var(--accent) 85%, var(--text));
+        background: color-mix(in oklab, var(--accent) 12%, transparent);
+        font-size: 0.9rem;
+        width: fit-content;
+      }
+
+      footer {
+        margin-top: 26px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="pill">Niklas random stuff</div>
+        <h1>Niklas random stuff</h1>
+        <p>A simple page for links, notes, and experiments.</p>
+      </header>
+
+      <section class="grid" aria-label="Random stuff sections">
+        <article class="card">
+          <h2>Links</h2>
+          <p>Add your favorite links here.</p>
+        </article>
+        <article class="card">
+          <h2>Notes</h2>
+          <p>Quick thoughts, drafts, or reminders.</p>
+        </article>
+        <article class="card">
+          <h2>Experiments</h2>
+          <p>Small demos and random ideas.</p>
+        </article>
+      </section>
+
+      <footer>
+        <p>
+          Tip: open this file directly, or serve the folder with a static server
+          (e.g. <code>python -m http.server</code>).
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>
