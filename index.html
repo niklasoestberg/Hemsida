@@ -374,6 +374,7 @@
           Total invested, current value, and purchase history (EUR).
           As of <span id="inv-asof">—</span>.
         </p>
+        <p class="muted" id="inv-warn" style="display: none; margin-top: 8px"></p>
 
         <form id="inv-add-form" class="card" style="margin-top: 12px">
           <div class="row">
@@ -874,24 +875,31 @@
           new Set(lots.map((l) => normalizeTicker(l.ticker)).filter(Boolean))
         );
         const dataByTicker = {};
+        const failedTickers = [];
 
         for (const t of tickers) {
-          dataByTicker[t] = await getDailyCloses(t, { force: forcePrices });
+          try {
+            dataByTicker[t] = await getDailyCloses(t, { force: forcePrices });
+          } catch {
+            failedTickers.push(t);
+          }
         }
 
-        // Use the earliest "latestDate" across tickers as the portfolio as-of date
-        const asOf = tickers
-          .map((t) => dataByTicker[t].latestDate)
-          .sort()[0];
+        const okTickers = tickers.filter((t) => dataByTicker[t]);
+        const asOf =
+          okTickers.length > 0
+            ? okTickers.map((t) => dataByTicker[t].latestDate).sort()[0]
+            : null;
 
         const currentCloseByTicker = {};
-        for (const t of tickers) {
+        for (const t of okTickers) {
           const series = dataByTicker[t].series;
-          const v = closeOnOrNext(series, asOf) || {
-            used: dataByTicker[t].latestDate,
-            close: dataByTicker[t].latestClose,
-          };
-          currentCloseByTicker[t] = v.close;
+          const v = asOf
+            ? closeOnOrNext(series, asOf)
+            : { used: dataByTicker[t].latestDate, close: dataByTicker[t].latestClose };
+          currentCloseByTicker[t] =
+            (v && Number.isFinite(v.close) ? v.close : dataByTicker[t].latestClose) ??
+            null;
         }
 
         // Fill missing purchase prices from historical closes (best-effort)
@@ -922,7 +930,11 @@
         }
 
         const currentValue = Object.entries(sharesByTicker).reduce(
-          (sum, [t, sh]) => sum + sh * (currentCloseByTicker[t] || 0),
+          (sum, [t, sh]) =>
+            sum +
+            (Number.isFinite(currentCloseByTicker[t])
+              ? sh * currentCloseByTicker[t]
+              : 0),
           0
         );
 
@@ -934,8 +946,10 @@
           if (!Number.isFinite(p) || !Number.isFinite(sh)) continue;
           cashflows.push({ date: lot.date, amount: -sh * p });
         }
-        cashflows.push({ date: asOf, amount: currentValue });
-        const irr = xirr(cashflows);
+        const irr =
+          asOf && currentValue > 0
+            ? xirr([...cashflows, { date: asOf, amount: currentValue }])
+            : null;
 
         // Portfolio series: use union of dates from all series, compute value with last-known close
         const start = lots
@@ -944,16 +958,16 @@
           .sort()[0];
 
         const dateSet = new Set();
-        for (const t of tickers) {
+        for (const t of okTickers) {
           for (const p of dataByTicker[t].series) {
-            if (p.d < start || p.d > asOf) continue;
+            if (p.d < start || (asOf && p.d > asOf)) continue;
             dateSet.add(p.d);
           }
         }
         const dates = Array.from(dateSet).sort();
 
         const closeMapByTicker = {};
-        for (const t of tickers) {
+        for (const t of okTickers) {
           closeMapByTicker[t] = new Map(dataByTicker[t].series.map((p) => [p.d, p.c]));
         }
 
@@ -982,7 +996,7 @@
             evIdx++;
           }
           let v = 0;
-          for (const t of tickers) {
+          for (const t of okTickers) {
             const m = closeMapByTicker[t];
             const c = m.has(d) ? m.get(d) : lastCloseByTicker[t];
             if (m.has(d)) lastCloseByTicker[t] = m.get(d);
@@ -997,7 +1011,7 @@
 
         // downsample for chart (weekly), keep key dates
         const keyDates = new Set(lots.map((l) => l.date).filter(Boolean));
-        keyDates.add(asOf);
+        if (asOf) keyDates.add(asOf);
         const down = [];
         for (let i = 0; i < series.length; i++) {
           const p = series[i];
@@ -1006,6 +1020,7 @@
 
         return {
           asOf,
+          failedTickers,
           currentCloseByTicker,
           totalInvested,
           currentValue,
@@ -1026,7 +1041,7 @@
 
           const portfolio = await buildPortfolio(lots, { forcePrices });
 
-          byId("inv-asof").textContent = portfolio.asOf;
+          byId("inv-asof").textContent = portfolio.asOf || "—";
           byId("inv-total-invested").textContent = eur.format(
             portfolio.totalInvested
           );
@@ -1034,6 +1049,17 @@
             portfolio.currentValue
           );
           byId("inv-irr").textContent = fmtPct(portfolio.irr);
+
+          const warn = byId("inv-warn");
+          if (portfolio.failedTickers && portfolio.failedTickers.length) {
+            warn.style.display = "";
+            warn.textContent = `Could not load prices for: ${portfolio.failedTickers.join(
+              ", "
+            )}. The rest of the portfolio is still shown.`;
+          } else {
+            warn.style.display = "none";
+            warn.textContent = "";
+          }
 
           // table
           tbody.innerHTML = "";
