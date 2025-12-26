@@ -732,6 +732,7 @@
       const NIKLAS_INVESTMENTS_KEY = "niklas-hemsida-investments-niklas-v1";
       const NIKLAS_INVESTMENTS_SEED_KEY = "niklas-hemsida-investments-niklas-seed-v1";
       const NILS_MIGRATION_KEY = "nils-hemsida-migrated-legacy-v1";
+      const NILS_ENSURE_LOTS_KEY = "nils-hemsida-ensure-lots-v1";
       const PRICE_CACHE_KEY = "niklas-hemsida-price-cache-v1";
       const PRICE_CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
@@ -1320,6 +1321,8 @@
           migrateFromKey,
           migrateIntoKey,
           migrateOnceKey,
+          ensureLots,
+          ensureOnceKey,
         } = opts;
 
         let initialized = false;
@@ -1661,6 +1664,35 @@
             }
           }
 
+          // One-time: ensure specific lots exist (if configured)
+          if (ensureOnceKey && Array.isArray(ensureLots) && ensureLots.length) {
+            try {
+              const done = localStorage.getItem(ensureOnceKey) === "1";
+              if (!done) {
+                const lots = loadLots();
+                const fp = (l) =>
+                  [
+                    normalizeTicker(l.ticker),
+                    l.date || "",
+                    String(l.shares ?? ""),
+                    l.purchasePrice == null ? "" : String(l.purchasePrice),
+                  ].join("|");
+                const seen = new Set(lots.map(fp));
+                for (const lot of ensureLots) {
+                  const key = fp(lot);
+                  if (!seen.has(key)) {
+                    lots.push(lot);
+                    seen.add(key);
+                  }
+                }
+                saveLots(lots);
+                localStorage.setItem(ensureOnceKey, "1");
+              }
+            } catch {
+              // ignore
+            }
+          }
+
           // Optional one-time seeding
           try {
             const seeded = localStorage.getItem(seedKey) === "1";
@@ -1835,6 +1867,41 @@
         migrateFromKey: NILS_SPLIT_KEY,
         migrateIntoKey: NILS_INVESTMENTS_KEY,
         migrateOnceKey: NILS_MIGRATION_KEY,
+        ensureOnceKey: NILS_ENSURE_LOTS_KEY,
+        ensureLots: [
+          {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+            ticker: "dher.de",
+            name: "Delivery Hero",
+            date: "2023-04-11",
+            shares: 1,
+            purchasePrice: null,
+          },
+          {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + 1),
+            ticker: "dher.de",
+            name: "Delivery Hero",
+            date: "2024-06-24",
+            shares: 1,
+            purchasePrice: null,
+          },
+          {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + 2),
+            ticker: "tsla.us",
+            name: "Tesla",
+            date: "2024-10-15",
+            shares: 1,
+            purchasePrice: null,
+          },
+          {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + 3),
+            ticker: "nvda.us",
+            name: "Nvidia",
+            date: "2025-02-12",
+            shares: 1,
+            purchasePrice: null,
+          },
+        ],
       });
 
       const niklasApp = makeInvestmentsApp({
