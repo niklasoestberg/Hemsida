@@ -1669,35 +1669,6 @@
             }
           }
 
-          // One-time: ensure specific lots exist (if configured)
-          if (ensureOnceKey && Array.isArray(ensureLots) && ensureLots.length) {
-            try {
-              const done = localStorage.getItem(ensureOnceKey) === "1";
-              if (!done) {
-                const lots = loadLots();
-                const fp = (l) =>
-                  [
-                    normalizeTicker(l.ticker),
-                    l.date || "",
-                    String(l.shares ?? ""),
-                    l.purchasePrice == null ? "" : String(l.purchasePrice),
-                  ].join("|");
-                const seen = new Set(lots.map(fp));
-                for (const lot of ensureLots) {
-                  const key = fp(lot);
-                  if (!seen.has(key)) {
-                    lots.push(lot);
-                    seen.add(key);
-                  }
-                }
-                saveLots(lots);
-                localStorage.setItem(ensureOnceKey, "1");
-              }
-            } catch {
-              // ignore
-            }
-          }
-
           // Optional one-time seeding
           try {
             const seeded = localStorage.getItem(seedKey) === "1";
@@ -1896,7 +1867,6 @@
         migrateFromKey: NILS_SPLIT_KEY,
         migrateIntoKey: NILS_INVESTMENTS_KEY,
         migrateOnceKey: NILS_MIGRATION_KEY,
-        ensureOnceKey: NILS_ENSURE_LOTS_KEY,
         ensureLots: [
           {
             id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
@@ -1939,7 +1909,6 @@
         storageKey: NIKLAS_INVESTMENTS_KEY,
         seedKey: NIKLAS_INVESTMENTS_SEED_KEY,
         defaults: defaultNiklasInvestments,
-        ensureOnceKey: NIKLAS_ENSURE_LOTS_KEY,
         ensureLots: [
           {
             id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
